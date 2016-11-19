@@ -66,9 +66,10 @@
 		font-family: "Georgia", "Times New Roman", serif;
 		font-weight: normal; }
 	h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit; }
-<!--	h1 { font-size: 46px; line-height: 50px; margin-bottom: 14px;} -->
+        /* h1 { font-size: 46px; line-height: 50px; margin-bottom: 14px;} */
 	h1 { font-size: 35px; line-height: 40px; margin-bottom: 10px; }
-	h2 { font-size: 28px; line-height: 34px; margin-bottom: 8px; }
+        /* h2 { font-size: 38px; line-height: 34px; margin-bottom: 8px; } */
+	h2 { font-size: 22px; line-height: 26px; }
 	h3 { font-size: 21px; line-height: 30px; margin-bottom: 4px; }
 	h4 { font-size: 17px; line-height: 24px; }
 	h5 { font-size: 14px; line-height: 21px; }
@@ -94,8 +95,9 @@
 
 /* #Links
 ================================================== */
-	a, a:visited { color: #333; text-decoration: underline; outline: 0; }
-	a:hover, a:focus { color: #000; }
+	/* a, a:visited { color: #333; text-decoration: underline; outline: 0; } */
+	a, a:visited { color: #0000EE; text-decoration: none; outline: 0; }
+	a:hover, a:focus { color: #4169e1; text-decoration: underline; }
 	p a, p a:visited { line-height: inherit; }
 
 
@@ -283,4 +285,10 @@ pre {
     word-wrap: break-word;
 }
 
+b { font-weight: bold; color: #333; }
 
+code {
+    font-family: Monaco,"Courier New","DejaVu Sans Mono","Bitstream Vera Sans Mono",monospace;
+    background-color: #F5F5F5;
+    font-size: 95%;
+}

@@ -41,12 +41,13 @@
 <div class="container">
     <div class="three columns sidebar">
         <nav>
-        <img src="/css/oce-logo-2.png" alt="OCE">
-            <ul>
+        <img src="/css/oce-logo-3.png" alt="OCE">
+            <ul style="text-decoration: none" >
                 <li><a href="/oce/index.html">Overview</a></li>
                 <li><a href="/oce/installation.html">Installation</a></li>
                 <li><a href="/oce/examples.html">Examples</a></li>
                 <li><a href="/oce/documentation.html">Documentation</a></li>
+                <li><a href="/oce/datasets.html">Datasets</a></li>
                 <li><a href="/oce/bugs.html">Bugs</a></li>
             </ul>
         </nav>
@@ -60,32 +61,34 @@
         <hr class="large" />
 
 <div id="content">
-    <p>Oce is a package for the <a href="http://www.r-project.org/">R statistical
-    language</a> that helps Oceanographers do their work by providing functions
-to read Oceanographic data files, to process the data in instrument-specific
-ways, and to represent the results with plots that follow Oceanographic
-convention.</p>
+    <p>Oce is a package for the <a href="http://www.r-project.org">R statistical language</a>
+that helps Oceanographers do their work by providing functions to read
+Oceanographic data files, to process the data in instrument-specific ways, and
+to represent the results with plots that follow Oceanographic convention.</p>
 
-<p>Developed in a university and research setting, Oce is simple enough for
-novices but powerful enough for experts.</p>
+<p>Developed in university and research settings, Oce is simple enough for novices
+but powerful enough for experts.</p>
 
-<p>Oce makes heavy use of the R notion of <i>generic functions</i>, which means
-that a single function call works across a wide range of data types.  For example,</p>
-<div class="highlight"><pre><code class="r">library<span class="p">(</span>oce<span class="p">)</span>
-d <span class="o">&lt;-</span> read.oce<span class="p">(</span><span class="s">&quot;file&quot;</span><span class="p">)</span>
-plot<span class="p">(</span>d<span class="p">)</span></code></pre></div>
-<p>will produce a useful plot that is tailored to the type of data stored in
-the file named <code>file</code>.  For example, if <code>file</code> contains
-CTD data, then the <code>read.oce()</code> function will return an object of
-class <code>ctd</code>, causing <code>plot()</code> to produce profiles of
-salinity, temperature, density and buoyancy frequency, along with a TS plot and
-a location map.  But if <code>file</code> contains ADCP data, the results will
-instead be a set of images giving space-time variation of velocity components.
-Similar behaviours result from the dozens of data types recognized by Oce.</p>
+<p>Oce makes heavy use of the R notion of <em>generic functions</em>, so that a single
+function call works across a wide range of data types.  For example,</p>
+
+<p><code>r
+library(oce)
+d &lt;- read.oce("file")
+plot(d)
+</code></p>
+
+<p>will produce a useful plot that is tailored to the type of data stored in the
+file named <code>file</code>.  For example, if <code>file</code> contains CTD data, then the
+<code>read.oce()</code> function will return an object of class <code>ctd</code>, causing <code>plot()</code> to
+produce profiles of salinity, temperature, density and buoyancy frequency,
+along with a TS plot and a location map.  But if <code>file</code> contains ADCP data, the
+results will instead be a set of images giving space-time variation of velocity
+components.  Similar behaviours result from the dozens of data types recognized
+by Oce.</p>
 
 <p>Installing Oce is a simple matter, as shown in the next tab of this website.
-Other tabs provide entries into the documentation and the bug-reporting
-system.</p>
+Other tabs provide entries into the documentation and the bug-reporting system.</p>
 
 </div>
 
@@ -100,6 +103,17 @@ system.</p>
     href="https://github.com/dankelley/oce/tree/gh-pages">GitHub</a>.</p>
 
 <div class="resize"></div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-58112483-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
 </body>
 </html>
 
