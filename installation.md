@@ -14,9 +14,9 @@ from within R with
 install.packages("oce")
 ```
 
-## Pre-compiled development version (normal users)
+## Pre-compiled development version
 
-About once per week, `oce` is compiled for MSWindows and for OS X.
+Occasionally, `oce` is compiled for MSWindows and for OS X.
 The results are stored at [a Dropbox
 site](https://www.dropbox.com/sh/awlz31v1jj7w0ct/620Tf2ZkGz).  Visit that site
 and the appropriate subdirectory (`osx` or `windows`),
@@ -25,7 +25,7 @@ normally installs packages, e.g. on an OS X machine, type the following in a
 terminal (console) window:
 
 ```bash
-R CMD install oce_0.9-19.tgz 
+R CMD install oce_0.9-22.tgz 
 R CMD install ocedata_0.1.4.tgz 
 ```
 
@@ -37,14 +37,13 @@ the downloaded package files by using the menu item *Install Packages* under
 the *Tools* menu, and selecting *Install from: Package archive file.* A similar
 approach can be used with the R.app GUI under the *Packages & Data* menu.
 
-## Source-code development version (advanced users)
+## Source-code development version
 
 Users who are set up to build packages (which requires a C compiler, etc; see
 note 1) may stay at the cutting edge by installing a development version.  This
-may be done in several ways, of which the third is probably the best for most
-users.
+may be done in several ways, of which the third is the best for most users.
 
-1.  Download the source for oce and ocedata as tarballs
+1.  Download the tarball sources
     ([oce](http://github.com/dankelley/oce/tarball/develop) and
 [ocedata](http://github.com/dankelley/ocedata/tarball/master)), expand the
 files, rename the resultant directories to `oce` and `ocedata` and then execute
@@ -62,20 +61,26 @@ R CMD install ocedata_0.1.4.gz  # adjust version as needed
     and
     [ocedata](http://github.com/dankelley/ocedata/zipball/master).
 
-2.  Acquire the sources through Git using
+2.  Clone the sources with Git
 
     ```bash
 git clone https://dankelley@github.com/dankelley/oce.git
 git clone https://dankelley@github.com/dankelley/ocedata.git
 ```
-    and then build them as described in step 1.
-3.  Download and build using `install_github()`
+    and then build as described above.
+
+3.  Build with `devtools::install_github()`
 
     ```R
 library(devtools)
 install_github("dankelley/oce", ref="develop")
 install_github("dankelley/ocedata", ref="master")
 ```
+
+The first method is included here for convenience of users who do not have git
+on their computers. The second method is the one chosen by most users who have
+programming experience.  The third method is recommended for most users who
+simply want to build an up-to-date version of oce.
 
 **Note.** Getting ready to compile (by installing a `C` compiler, etc.)
 is easy on linux, although the method depends on the system. On MSWindows,
