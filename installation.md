@@ -22,11 +22,11 @@ site](https://www.dropbox.com/sh/awlz31v1jj7w0ct/620Tf2ZkGz).  Visit that site
 and the appropriate subdirectory (`osx` or `windows`),
 and download both `oce` and `ocedata`. Then install as R
 normally installs packages, e.g. on an OS X machine, type the following in a
-terminal (console) window:
+terminal (console) window (adjusting version numbers, as appropriate):
 
 ```bash
-R CMD install oce_0.9-22.tgz 
-R CMD install ocedata_0.1.4.tgz 
+R CMD install oce_0.9-23.tgz
+R CMD install ocedata_0.1.4.tgz
 ```
 
 Note that if your system uncompresses the files, you will have to change the
@@ -47,13 +47,13 @@ may be done in several ways, of which the third is the best for most users.
     ([oce](http://github.com/dankelley/oce/tarball/develop) and
 [ocedata](http://github.com/dankelley/ocedata/tarball/master)), expand the
 files, rename the resultant directories to `oce` and `ocedata` and then execute
-the OS commands stated below.
+the OS commands stated below (adjusting version numbers, as appropriate).
 
     ```bash
 R CMD build oce
-R CMD install oce_0.9-19.tar.gz # adjust version as needed
+R CMD install oce_0.9-23.tar.gz
 R CMD build ocedata
-R CMD install ocedata_0.1.4.gz  # adjust version as needed
+R CMD install ocedata_0.1.4.gz
 ```
 
     A similar procedure works for the zip files for
