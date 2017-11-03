@@ -5,20 +5,15 @@
 \alias{plot,section-method}
 \title{Plot a Section}
 \usage{
-\S4method{plot}{section}(x, which = c(1, 2, 3, 99),
-  eos = getOption("oceEOS", default = "gsw"), at = NULL, labels = TRUE,
-  grid = FALSE, contourLevels = NULL, contourLabels = NULL,
-  stationIndices, coastline = c("best", "coastlineWorld",
-  "coastlineWorldMedium", "coastlineWorldFine", "none"), xlim = NULL,
-  ylim = NULL, add = FALSE, map.xlim = NULL, map.ylim = NULL,
-  clongitude, clatitude, span, projection = NULL, xtype = c("distance",
-  "track", "longitude", "latitude", "time"), ytype = c("depth", "pressure"),
-  ztype = c("contour", "image", "points"), zbreaks = NULL, zcol = NULL,
+\S4method{plot}{section}(x, which = c(1, 2, 3, 99), eos, at = NULL,
+  labels = TRUE, grid = FALSE, contourLevels = NULL,
+  contourLabels = NULL, stationIndices, coastline = "best", xlim = NULL,
+  ylim = NULL, zlim = NULL, map.xlim = NULL, map.ylim = NULL,
+  clongitude, clatitude, span, projection = NULL, xtype = "distance",
+  ytype = "depth", ztype = "contour", zbreaks = NULL, zcol = NULL,
   legend.loc = "bottomright", adorn = NULL, showStations = FALSE,
-  showStart = TRUE, showBottom = TRUE, axes = TRUE,
-  mgp = getOption("oceMgp"), mar = c(mgp[1] + 1, mgp[1] + 1, mgp[2] + 1,
-  mgp[2] + 0.5), col = par("col"), cex = par("cex"), pch = par("pch"),
-  debug = getOption("oceDebug"), ...)
+  showStart = TRUE, showBottom = TRUE, axes = TRUE, mgp, mar, col, cex,
+  pch, debug, ...)
 }
 \arguments{
 \item{x}{a \code{section} object, e.g. as created by \code{\link{as.section}}
@@ -30,8 +25,10 @@ these panels, in reading order.  If only one panel is plotted, \code{par} is
 not adjusted, which makes it easy to add to the plot with subsequent plotting
 commands.}
 
-\item{eos}{Character string indicating the equation of state to be used, either
-\code{"unesco"} or \code{"gsw"}.}
+\item{eos}{Character indication of the seawater equation of state
+to use. The permitted choices are \code{"gsw"} and \code{"unesco"}.
+If \code{eos} is not supplied, it defaults to
+\code{getOption("oceEOS", default="gsw")}.}
 
 \item{at}{If \code{NULL} (the default), the x axis will indicate the distance
 of the stations from the first in the section.  (This may give errors in the
@@ -52,13 +49,21 @@ by \code{at}.}
 that an index is \emph{not} a station number, e.g. to show the first 4
 stations, use \code{station.indices=1:4}.}
 
-\item{coastline}{String giving the coastline to be used in a station map, or
-\code{"best"} to pick the one with highest resolution, or \code{"none"} to
-avoid drawing the coastline.}
+\item{coastline}{String giving the coastline to be used in a station map
+The permitted choices are \code{"best"} (the default) to pick
+a variant that suits the scale, \code{"coastlineWorld"} for the coarse
+version that is provided by \CRANpkg{oce},
+\code{"coastlineWorldMedium"} or \code{"coastlineWorldFine"} for two
+coastlines provided by the \CRANpkg{ocedata} package, or \code{"none"}, to avoid
+drawing a coastline.}
 
 \item{xlim}{Optional limit for x axis (only in sections, not map).}
 
 \item{ylim}{Optional limit for y axis (only in sections, not map)}
+
+\item{zlim}{Optional two-element numerical vector specifying the
+limit on the plotted field. This is used only if \code{ztype="image"};
+see also \code{zbreaks} and \code{zcol}.}
 
 \item{map.xlim, map.ylim}{Optional limits for station map; \code{map.ylim} is
 ignored if \code{map.xlim} is provided.}
@@ -80,15 +85,20 @@ order (which may make no sense) and a warning will be printed.}
 pressure (in dbar, with zero at the surface) or \code{"depth"} for depth (in m
 below the surface, calculated from pressure with \code{\link{swDepth}}).}
 
-\item{ztype}{String indicating whether to use contours, an image, or points.
+\item{ztype}{String indicating whether to how to indicate the "z"
+data (in the R sense, i.e. this could be salinity, temperature, etc; it does
+not mean the vertical coordinate) The choices are: \code{"contour"} for
+contours, \code{"image"} for an image (drawn with \code{\link{imagep}} with
+\code{filledContours=TRUE}), or \code{"points"} to draw points.
 In the first two cases, the data must be gridded, with identical pressures at
 each station.}
 
-\item{zbreaks, zcol}{Breaks and colours to be used if \code{ztype="points"} or
-\code{"image"}.  If not provided, a reasonable default is chosen.  If
-\code{zcol} is a function, it will be invoked with an argument equal to
-\code{1+length(zbreaks)}.  If \code{zbreaks} is not given, it defaults to a
-vector of length 200, with values spanning the data range.}
+\item{zbreaks, zcol}{Indication of breaks and colours to be used if \code{ztype="points"} or
+\code{"image"}. If not provided, reasonable default are used. If \code{zlim}
+is given but \code{breaks} is not given, then \code{breaks} is computed to
+run from \code{zlim[1]} to \code{zlim[2]}. If \code{zcol} is a function,
+it will be invoked with an argument equal to
+\code{1+length(zbreaks)}.}
 
 \item{legend.loc}{Location of legend, as supplied to \code{\link{legend}}, or
 set to the empty string to avoid plotting a legend.}
@@ -116,36 +126,49 @@ defunct \code{oce} features.)}
 \item{showStart}{Logical indicating whether to indicate the first station with
 a different symbol than the others.}
 
-\item{showBottom}{Logical indicating whether to draw the bottom, or a character
-string indicating the method for plotting the bottom.  The allowed methods are:
-\code{polygon}, which fills the space to the bottom, or \code{lines}, which
-draws lines from stations to the bottom, or \code{points}, which draws points
-at the bottom.}
+\item{showBottom}{An indication of whether (and how) to indicate the ocean bottom.
+If \code{FALSE}, then the bottom is not rendered. If \code{TRUE}, then it
+is rendered with a gray polygon. If \code{showBottom} is a character string,
+then there are three possibilities: is the string is \code{"polygon"} then
+a polygon is drawn, if it is \code{"lines"} then a line is drawn, and if it
+is \code{"points"} then points are drawn. If \code{showBottom} is an object
+inherinting from \code{\link{topo-class}} then the station locations are
+interpolated to that topography and the results are shown with a polygon.
+In this last case, the interpolation is set at a grid that is roughly
+in accordance with the resolution of the latitudes in the \code{topo} object.
+See \dQuote{Examples}.}
 
 \item{axes}{Logical value indicating whether to draw axes.}
 
-\item{mgp}{3-element numerical vector to use for \code{par(mgp)}, and also for
-\code{par(mar)}, computed from this.  The default is tighter than the R
-default, in order to use more space for the data and less for the axes.}
+\item{mgp}{A 3-element numerical vector to use for \code{par(mgp)}, and also for
+\code{par(mar)}, computed from this. If not provided, this defaults to
+\code{getOption("oceMgp")}.}
 
-\item{mar}{Value to be used with \code{\link{par}("mar")}.}
+\item{mar}{Value to be used with \code{\link{par}("mar")}. If not provided,
+a default is set up.}
 
-\item{col}{Colour, as in \code{\link{par}("col")}.}
+\item{col}{Colour, which defaults to \code{\link{par}("col")}.}
 
-\item{cex}{Value to be used with \code{\link{par}("cex")}, for any use of
-\code{\link{points}}, e.g. for \code{which="data"}.}
+\item{cex}{Numerical character-expansion factor, which defaults to \code{\link{par}("cex")}.}
 
-\item{pch}{Value to be used with \code{\link{par}("pch")} (see \code{cex},
-above.)}
+\item{pch}{Indication of symbol type; defaults to \code{\link{par}("pch")}.}
 
-\item{debug}{A flag that turns on debugging.  Set to 1 to get a moderate amount
-of debugging information, or to 2 to get more.}
+\item{debug}{an integer specifying whether debugging information is
+to be printed during the processing. This is a general parameter that
+is used by many \code{oce} functions. Generally, setting \code{debug=0}
+turns off the printing, while higher values suggest that more information
+be printed. If \code{debug} is not supplied, it defaults to
+\code{\link{getOption}("oceDebug")}.}
 
 \item{...}{Optional arguments passed to the contouring function, e.g. using
 \code{labcex=1} will increase the size of contour labels.}
 }
 \value{
-None.
+If the original section was gridded, the return value is that section.
+Otherwise, the gridded section that was constructed for the plot is returned.
+In both cases, the value is returned silently. The
+purpose of returning the section is to enable subsequent processing
+of the grid, including adding elements to the plot.
 }
 \description{
 Creates a summary plot for a CTD section, with one panel for each value of
@@ -154,7 +177,7 @@ Creates a summary plot for a CTD section, with one panel for each value of
 \details{
 The type of plot is governed by \code{which}, as follows.
 
-\itemize{  
+\itemize{
     \item \code{which=1} or \code{"temperature"} for temperature contours (the default)
     \item \code{which=2} or \code{"salinity"} for salinity contours
     \item \code{which=3} or \code{"sigmaTheta"} for sigma-theta contours
@@ -187,29 +210,38 @@ library(oce)
 data(section)
 sg <- sectionGrid(section)
 
-## AO3 section
-plot(sg, which="salinity", ztype="points", pch=20, cex=1.5) 
+## 1. AO3 section, default fields.
+plot(section)
 
-## Gulf Stream
+## 2. Gulf Stream
 GS <- subset(section, 109<=stationId&stationId<=129)
-GSg <- sectionGrid(GS, p=seq(0,2000,100))
-plot(GSg, which=c(1,99), map.ylim=c(34,42))
-
-par(mfrow=c(2,1))
+GSg <- sectionGrid(GS, p=seq(0, 2000, 100))
+plot(GSg, which=c(1, 99), map.ylim=c(34, 42))
+par(mfrow=c(2, 1))
 plot(GS, which=1, ylim=c(2000, 0), ztype='points',
-zbreaks=seq(0,30,2), pch=20, cex=3)
+     zbreaks=seq(0,30,2), pch=20, cex=3)
 plot(GSg, which=1, ztype='image', zbreaks=seq(0,30,2))
 
-## image, with coloured dots to show if grid smoothing was OK
+par(mfrow=c(1, 1))
+
+## 3. Image, with coloured dots to indicate grid-data mismatch.
 plot(GSg, which=1, ztype='image')
 T <- GS[['temperature']]
 col <- oce.colorsJet(100)[rescale(T, rlow=1, rhigh=100)]
 points(GS[['distance']],GS[['depth']],pch=20,cex=3,col='white')
 points(GS[['distance']],GS[['depth']],pch=20,cex=2.5,col=col)
 
+
+\dontrun{
+## 4. Image of Absolute Salinity, with 4-minute bathymetry
+## It's easy to calculate the desired area for the bathymetry,
+## but for brevity we'll hard-code it. Note that download.topo()
+## caches the file locally.
+f <- download.topo(west=-80, east=0, south=35, north=40, resolution=4)
+t <- read.topo(f)
+plot(section, which="SA", xtype="longitude", ztype="image", showBottom=t)
 }
-\author{
-Dan Kelley
+
 }
 \seealso{
 The documentation for \code{\link{section-class}} explains the
@@ -250,4 +282,6 @@ Other things related to \code{section} data: \code{\link{[[,section-method}},
   \code{\link{subset,section-method}},
   \code{\link{summary,section-method}}
 }
-
+\author{
+Dan Kelley
+}

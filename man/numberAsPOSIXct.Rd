@@ -36,7 +36,8 @@ MathWorks [1] calls ``January 0, 0000'' (i.e.  \code{ISOdatetime(0, 1, 1, 0,
 \item \code{"gps"} employs the GPS convention. For this, \code{t} is a
 two-column matrix, with the first column being the the GPS "week"
 (referenced to 1999-08-22) and the second being the GPS "second" (i.e. the
-second within the week).
+second within the week). Since the GPS satellites do not handle leap
+seconds, the R-defined \code{.leap.seconds} is used for corrections.
 
 \item \code{"argo"} employs Argo times, measured in days since the start of
 the year 1900.
@@ -48,7 +49,7 @@ of the year 1800.
 the year 1. (Note that, for reasons that are unknown at this time, a simple
 R expression of this definition is out by two days compared with the UDUNITS
 library, which is used by NCEP. Therefore, a two-day offset is applied. See
-[2,3].)
+[2, 3].)
 
 \item \code{"sas"} employs SAS times, indicated by \code{type="sas"}, have
 origin at the start of 1960.
@@ -66,12 +67,9 @@ convention used by Sea-Bird CTD software).
 
 numberAsPOSIXct(0)                     # unix time 0
 numberAsPOSIXct(1, type="matlab")      # matlab time 1
-numberAsPOSIXct(cbind(566,345615), type="gps") # Canada Day
+numberAsPOSIXct(cbind(566, 345615), type="gps") # Canada Day, zero hour UTC
 numberAsPOSIXct(cbind(2013, 0), type="yearday") # start of 2013
 
-}
-\author{
-Dan Kelley
 }
 \references{
 [1] Matlab times:
@@ -88,8 +86,9 @@ Dan Kelley
 Other things related to time: \code{\link{ctimeToSeconds}},
   \code{\link{julianCenturyAnomaly}},
   \code{\link{julianDay}}, \code{\link{numberAsHMS}},
-  \code{\link{oce.as.POSIXlt}},
   \code{\link{secondsToCtime}},
   \code{\link{unabbreviateYear}}
 }
-
+\author{
+Dan Kelley
+}

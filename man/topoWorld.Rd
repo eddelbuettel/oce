@@ -6,7 +6,7 @@
 \title{Global Topographic Dataset at Half-degree Resolution}
 \source{
 The binary ETOPO5 dataset was downloaded in late 2009 from the NOAA website,
-\samp{http://www.ngdc.noaa.gov/mgg/global/relief/ETOPO5/TOPO/ETOPO5} (link last checked 2016-06-12),
+\samp{http://www.ngdc.noaa.gov/mgg/global/relief/ETOPO5/TOPO/ETOPO5},
 decoded, decimated from 1/12th degree resolution to 1/2 degree resolution, and
 passed through \code{\link{matrixShiftLongitude}} so that longitude is
 between -180 and 180 degrees.
@@ -29,8 +29,8 @@ with \code{\link{read.topo}} or \code{\link{as.topo}}.
 \examples{
 \dontrun{
 library(oce)
-data(topoWorld) 
-par(mfrow=c(2,1))
+data(topoWorld)
+par(mfrow=c(2, 1))
 plot(topoWorld, location=NULL)
 imagep(topoWorld)
 }
@@ -50,9 +50,9 @@ Other datasets provided with \code{oce}: \code{\link{adp}},
 
 Other things related to \code{topo} data: \code{\link{[[,topo-method}},
   \code{\link{[[<-,topo-method}}, \code{\link{as.topo}},
+  \code{\link{download.topo}},
   \code{\link{plot,topo-method}}, \code{\link{read.topo}},
   \code{\link{subset,topo-method}},
   \code{\link{summary,topo-method}},
   \code{\link{topo-class}}, \code{\link{topoInterpolate}}
 }
-

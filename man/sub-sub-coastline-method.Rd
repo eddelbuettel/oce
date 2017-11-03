@@ -73,6 +73,7 @@ match will work; this is accomplished by using \code{\link{pmatch}}.
 
 If none of the above-listed conditions holds, then \code{NULL} is returned.
 }
+
 \seealso{
 Other functions that extract parts of \code{oce} objects: \code{\link{[[,adp-method}},
   \code{\link{[[,adv-method}},
@@ -100,10 +101,10 @@ Other things related to \code{coastline} data: \code{\link{[[<-,coastline-method
   \code{\link{coastline-class}},
   \code{\link{coastlineBest}}, \code{\link{coastlineCut}},
   \code{\link{coastlineWorld}},
+  \code{\link{download.coastline}},
   \code{\link{plot,coastline-method}},
   \code{\link{read.coastline.openstreetmap}},
   \code{\link{read.coastline.shapefile}},
   \code{\link{subset,coastline-method}},
   \code{\link{summary,coastline-method}}
 }
-

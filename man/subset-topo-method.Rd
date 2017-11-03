@@ -30,15 +30,31 @@ data(topoWorld)
 plot(subset(topoWorld, latitude > 0))
 
 }
-\author{
-Dan Kelley
-}
 \seealso{
 Other things related to \code{topo} data: \code{\link{[[,topo-method}},
   \code{\link{[[<-,topo-method}}, \code{\link{as.topo}},
+  \code{\link{download.topo}},
   \code{\link{plot,topo-method}}, \code{\link{read.topo}},
   \code{\link{summary,topo-method}},
   \code{\link{topo-class}}, \code{\link{topoInterpolate}},
   \code{\link{topoWorld}}
-}
 
+Other functions that subset \code{oce} objects: \code{\link{subset,adp-method}},
+  \code{\link{subset,adv-method}},
+  \code{\link{subset,amsr-method}},
+  \code{\link{subset,argo-method}},
+  \code{\link{subset,cm-method}},
+  \code{\link{subset,coastline-method}},
+  \code{\link{subset,ctd-method}},
+  \code{\link{subset,echosounder-method}},
+  \code{\link{subset,lobo-method}},
+  \code{\link{subset,met-method}},
+  \code{\link{subset,oce-method}},
+  \code{\link{subset,odf-method}},
+  \code{\link{subset,rsk-method}},
+  \code{\link{subset,sealevel-method}},
+  \code{\link{subset,section-method}}
+}
+\author{
+Dan Kelley
+}

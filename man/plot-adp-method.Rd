@@ -98,11 +98,13 @@ if there are more than 2000 points to plot.}
 \item{missingColor}{colour used to indicate \code{NA} values in images (see
 \code{\link{imagep}}); set to \code{NULL} to avoid this indication.}
 
-\item{mgp}{A three-element numerical vector to use for \code{par(mgp)}
-to control spacing of axis elements.  The default is tighter than the R
-default, in order to use more space for the data and less for the axes.}
+\item{mgp}{A 3-element numerical vector used with \code{\link{par}("mgp")}
+to control the spacing of axis elements.
+The default is tighter than the R default.}
 
-\item{mar}{A four-element numerical vector to be used with \code{\link{par}("mar")}.}
+\item{mar}{A 4-element numerical vector used with \code{\link{par}("mar")}
+to control the plot margins.
+The default is tighter than the R default.}
 
 \item{mai.palette}{margins, in inches, to be added to those calculated for
 the palette; alter from the default only with caution}
@@ -156,8 +158,13 @@ panels.}
 
 \item{grid.lwd}{line width of grid}
 
-\item{debug}{a flag that turns on debugging.  Set to 1 to get a moderate
-amount of debugging information, or to 2 to get more.}
+\item{debug}{an integer specifying whether debugging information is
+to be printed during the processing. This is a general parameter that
+is used by many \code{oce} functions. Generally, setting \code{debug=0}
+turns off the printing, while higher values suggest that more information
+be printed. If one function calls another, it usually reduces the value of
+\code{debug} first, so that a user can often obtain deeper debugging
+by specifying higher \code{debug} values.}
 
 \item{\dots}{optional arguments passed to plotting functions.  For example,
 supplying \code{despike=TRUE} will cause time-series panels to be de-spiked
@@ -210,6 +217,14 @@ magnitude.'')
 distance-time images of percent-good for the respective beams.  (For data
 derived from Teledyne-RDI instruments, which are the only instruments that
 yield this item, it is called ``percent good.'')
+
+\item \code{which=80:83} (or \code{which="vv"}, \code{which="va"},
+\code{which="vq"}, and \code{which="vg"}) yield distance-time
+images of the vertical beam fields for a 5 beam "SentinelV" ADCP
+from Teledyne RDI.
+
+\item \code{which="vertical"} yields a two panel distance-time
+image of vertical beam velocity and amplitude.
 
 \item \code{which=13} (or \code{which="salinity"}) yields a time-series plot
 of salinity.
@@ -332,9 +347,6 @@ plot(adp, which=1:3)
 plot(adp, which='temperature', tformat='\%H:\%M')
 
 }
-\author{
-Dan Kelley
-}
 \seealso{
 Other functions that plot \code{oce} data: \code{\link{plot,adv-method}},
   \code{\link{plot,amsr-method}},
@@ -361,11 +373,12 @@ Other functions that plot \code{oce} data: \code{\link{plot,adv-method}},
 
 Other things related to \code{adp} data: \code{\link{[[,adp-method}},
   \code{\link{[[<-,adp-method}}, \code{\link{adp-class}},
-  \code{\link{adp}}, \code{\link{as.adp}},
-  \code{\link{beamName}}, \code{\link{beamToXyzAdp}},
-  \code{\link{beamToXyzAdv}}, \code{\link{beamToXyz}},
-  \code{\link{beamUnspreadAdp}}, \code{\link{binmapAdp}},
-  \code{\link{enuToOtherAdp}}, \code{\link{enuToOther}},
+  \code{\link{adpEnsembleAverage}}, \code{\link{adp}},
+  \code{\link{as.adp}}, \code{\link{beamName}},
+  \code{\link{beamToXyzAdp}}, \code{\link{beamToXyzAdv}},
+  \code{\link{beamToXyz}}, \code{\link{beamUnspreadAdp}},
+  \code{\link{binmapAdp}}, \code{\link{enuToOtherAdp}},
+  \code{\link{enuToOther}}, \code{\link{read.ad2cp}},
   \code{\link{read.adp.nortek}},
   \code{\link{read.adp.rdi}},
   \code{\link{read.adp.sontek.serial}},
@@ -378,4 +391,6 @@ Other things related to \code{adp} data: \code{\link{[[,adp-method}},
   \code{\link{toEnu}}, \code{\link{velocityStatistics}},
   \code{\link{xyzToEnuAdp}}, \code{\link{xyzToEnu}}
 }
-
+\author{
+Dan Kelley
+}

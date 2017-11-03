@@ -22,14 +22,29 @@ A new \code{lobo} object.
 Subset an lobo object, in a way that is somewhat
 analogous to \code{\link{subset.data.frame}}.
 }
-\author{
-Dan Kelley
-}
 \seealso{
 Other things related to \code{lobo} data: \code{\link{[[,lobo-method}},
   \code{\link{[[<-,lobo-method}}, \code{\link{as.lobo}},
   \code{\link{lobo-class}}, \code{\link{lobo}},
   \code{\link{plot,lobo-method}},
   \code{\link{summary,lobo-method}}
-}
 
+Other functions that subset \code{oce} objects: \code{\link{subset,adp-method}},
+  \code{\link{subset,adv-method}},
+  \code{\link{subset,amsr-method}},
+  \code{\link{subset,argo-method}},
+  \code{\link{subset,cm-method}},
+  \code{\link{subset,coastline-method}},
+  \code{\link{subset,ctd-method}},
+  \code{\link{subset,echosounder-method}},
+  \code{\link{subset,met-method}},
+  \code{\link{subset,oce-method}},
+  \code{\link{subset,odf-method}},
+  \code{\link{subset,rsk-method}},
+  \code{\link{subset,sealevel-method}},
+  \code{\link{subset,section-method}},
+  \code{\link{subset,topo-method}}
+}
+\author{
+Dan Kelley
+}

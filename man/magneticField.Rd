@@ -23,7 +23,7 @@ A list containing \code{declination}, \code{inclination}, and
 \description{
 Implements the 12th generation International Geomagnetic Reference Field
 (IGRF), based on a reworked version of a Fortran program downloaded from a
-NOAA website [1,2].  The code (subroutine \code{igrf12syn}) seems to have
+NOAA website [1].  The code (subroutine \code{igrf12syn}) seems to have
 been written by Susan Macmillan of the British Geological Survey.  Comments
 in the code indicate that it employs coefficients agreed to in December 2014
 by the IAGA Working Group V-MOD.  Comments in the \code{igrf12syn} source
@@ -54,18 +54,18 @@ mapContour(lon, lat, incl, col='blue', levels=seq(-90, 90, 5))
 }
 
 }
+\references{
+1. The underlying Fortran code is from \code{igrf12.f}, downloaded the NOAA
+website (\samp{https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html}) on June 7,
+2015. (That website suggests that there have been no update to the
+algorithm as of March 29, 2017.)
+}
+\seealso{
+Other things related to magnetism: \code{\link{applyMagneticDeclination}}
+}
 \author{
 Dan Kelley wrote the R code and a fortran wrapper to the
 \code{igrf12.f} subroutine, which was written by Susan Macmillan of the
 British Geological Survey and distributed ``without limitation'' (email from
 SM to DK dated June 5, 2015).
 }
-\references{
-1. The underlying Fortran code is from \code{igrf12.f}, downloaded the NOAA
-website (\url{http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html}) on June 7,
-2015.
-}
-\seealso{
-Other things related to magnetism: \code{\link{applyMagneticDeclination}}
-}
-

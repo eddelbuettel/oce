@@ -5,7 +5,7 @@
 \title{Seawater lapse rate}
 \usage{
 swLapseRate(salinity, temperature = NULL, pressure = NULL,
-  longitude = 300, latitude = 30, eos = getOption("oceEOS", default =
+  longitude = NULL, latitude = NULL, eos = getOption("oceEOS", default =
   "gsw"))
 }
 \arguments{
@@ -44,9 +44,6 @@ of state for seawater [1,2], and if \code{eos="gsw"}, the GSW formulation
 lr <- swLapseRate(40, 40, 10000) # 3.255976e-4
 
 }
-\author{
-Dan Kelley
-}
 \references{
 Fofonoff, P. and R. C. Millard Jr, 1983. Algorithms for
 computation of fundamental properties of seawater. \emph{Unesco Technical
@@ -75,4 +72,6 @@ Other functions that calculate seawater properties: \code{\link{T68fromT90}},
   \code{\link{swTheta}}, \code{\link{swViscosity}},
   \code{\link{swZ}}
 }
-
+\author{
+Dan Kelley
+}

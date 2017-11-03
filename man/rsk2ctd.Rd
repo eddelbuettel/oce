@@ -4,7 +4,8 @@
 \alias{rsk2ctd}
 \title{Create a ctd Object from an rsk Object}
 \usage{
-rsk2ctd(x, pressureAtmospheric = 0, debug = getOption("oceDebug"))
+rsk2ctd(x, pressureAtmospheric = 0, longitude, latitude, ship, cruise,
+  station, deploymentType, debug = getOption("oceDebug"))
 }
 \arguments{
 \item{x}{An \code{rsk} object, i.e. one inheriting from \code{\link{rsk-class}}.}
@@ -12,11 +13,26 @@ rsk2ctd(x, pressureAtmospheric = 0, debug = getOption("oceDebug"))
 \item{pressureAtmospheric}{A numerical value (a constant or a vector),
 that is subtracted from the pressure in \code{object} before storing it in the return value.}
 
-\item{debug}{An integer specifying whether debugging information is
+\item{longitude}{numerical value of longitude, in degrees East.}
+
+\item{latitude}{numerical value of latitude, in degrees North.}
+
+\item{ship}{optional string containing the ship from which the observations were made.}
+
+\item{cruise}{optional string containing a cruise identifier.}
+
+\item{station}{optional string containing a station identifier.}
+
+\item{deploymentType}{character string indicating the type of deployment (see
+\code{\link{as.ctd}}).}
+
+\item{debug}{an integer specifying whether debugging information is
 to be printed during the processing. This is a general parameter that
 is used by many \code{oce} functions. Generally, setting \code{debug=0}
 turns off the printing, while higher values suggest that more information
-be printed.}
+be printed. If one function calls another, it usually reduces the value of
+\code{debug} first, so that a user can often obtain deeper debugging
+by specifying higher \code{debug} values.}
 }
 \description{
 A new \code{ctd} object is assembled from the contents of the \code{rsk} object.
@@ -25,16 +41,15 @@ The data and metadata are mostly unchanged, with an important exception: the
 instruments measure total pressure, not sea pressure; see \dQuote{Details}.
 }
 \details{
-The \code{pressureType} element of the 
+The \code{pressureType} element of the
 \code{metadata} of \code{rsk} objects defines the pressure type, and this controls
 how pressure is set up in the returned object. If \code{object@metadata$pressureType}
 is \code{"absolute"} (or \code{NULL}) then the resultant pressure will be adjusted
 to make it into \code{"sea"} pressure. To do this, the value of
 \code{object@metadata$pressureAtmospheric} is inspected. If this is present, then
-it is subtracted from \code{pressure}. If this is missing, then 
+it is subtracted from \code{pressure}. If this is missing, then
 standard pressure (10.1325 dbar) will be subtracted. At this stage, the
-pressure should be near zero at the ocean surface, but some additional adjustment 
-might be necessary, and this may be indicated by setting the argument \code{pressureAtmospheric} to 
+pressure should be near zero at the ocean surface, but some additional adjustment
+might be necessary, and this may be indicated by setting the argument \code{pressureAtmospheric} to
 a non-zero value to be subtracted from pressure.
 }
-

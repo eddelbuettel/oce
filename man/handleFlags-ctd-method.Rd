@@ -5,7 +5,8 @@
 \alias{handleFlags,ctd-method}
 \title{Handle Flags in CTD Objects}
 \usage{
-\S4method{handleFlags}{ctd}(object, flags = list(), actions = list())
+\S4method{handleFlags}{ctd}(object, flags = list(), actions = list(),
+  debug = integer())
 }
 \arguments{
 \item{object}{A \code{ctd} object, i.e. one inheriting from \code{\link{ctd-class}}.}
@@ -16,7 +17,8 @@ or (b) a single unnamed item. In the first case, the attention is
 focussed on the named items, while in the second case the 
 all the data in the \code{object}'s \code{data} slot are examined.
 Each element in the list must be set to an integer or vector of integers,
-specifying conditions to be met before actions are to be taken.}
+specifying conditions to be met before actions are to be taken.
+See \dQuote{Details} for the default that is used if \code{flags} is not supplied.}
 
 \item{actions}{An optional \code{\link{list}} that contains items with
 names that match those in the \code{flags} argument.  If \code{actions}
@@ -25,7 +27,15 @@ is not supplied, the default will be to set all values identified by
 specifying \code{actions=list("NA")}. It is also possible to specify 
 functions that calculate replacement values. These are provided
 with \code{object} as the single argument, and must return a
-replacement for the data item in question.}
+replacement for the data item in question.
+See \dQuote{Details} for the default that is used if \code{actions} is not supplied.}
+
+\item{debug}{An optional integer specifying the degree of debugging, with
+value 0 meaning to skip debugging and 1 or higher meaning to print some
+information about the arguments and the data. It is usually a good idea to set
+this to 1 for initial work with a dataset, to see which flags are being
+handled for each data item. If not supplied, this defaults to the value of
+\code{\link{getOption}("oceDebug")}.}
 }
 \description{
 Data-quality flags are stored in the \code{metadata}
@@ -56,22 +66,13 @@ If \code{flags} and \code{actions} are not provided, the
 default is to use WHP (World Hydrographic Program) flags [1], in which the
 value 2 indicates good data, and other values indicate either unchecked,
 suspicious, or bad data. Any data not flagged as good are set
-to \code{NA} in the returned value. Since WHP flag codes run
+to \code{NA} in the returned value. (An exception is for salinity:
+if the item named \code{salinity} has a bad flag but \code{salinityBottle}
+has a good flag, then the bottle value is substituted, and a
+warning is issued.) Since WHP flag codes run
 from 1 to 9, this default is equivalent to
 setting \code{flags=list(all=c(1, 3:9))} along with
 \code{action=list("NA")}.
-}
-\section{Implementation status}{
- \code{handleFlags} is a new function as of March 2016,
-and it will probably change through the Spring of 2016.
-Almost nothing works yet, and users should not be doing
-any more than looking at the documentation and telling the developers
-whether the planned functioning seems reasonable.
-The hope is to get trial code working for \code{ctd}
-and \code{argo} data types by the end of April. After that, there
-will likely  be a month or more of testing with real-world
-work, with possible changes to the user interface. Then other
-types will be added, as needed.
 }
 \examples{
 library(oce)
@@ -86,9 +87,17 @@ data.frame(old=stn[['salinity']], flag=stn[['salinityFlag']], new=STN[['salinity
 # and only apply this action to salinity.
 STN <- handleFlags(stn, flags=list(salinity=c(1, 4:9)))
 
-# 3. Use smoothed TS relationship to nudge questionable data.
-# This is perhaps a silly idea, but at least it illustrates
-# how to write a nontrivial function for an action.
+# 3. A Canadian Department of Fisheries and Oceans convention for
+# some of its data files lists flags as 0=unchecked, 1=good,
+# 2=uncertain, 3=doubtful, 4=wrong, and 5=changed, so a
+# trusting arrangement would be to discard 2:4, and a more
+# cautious approach would be to also discard 0.
+STN <- handleFlags(stn, flags=list(2:4))
+STN <- handleFlags(stn, flags=list(c(0,2:4)))
+
+# 4. Use smoothed TS relationship to nudge questionable data.
+# This is not a recommended procedure, but rather just a simple
+# illustration of how to supply a function for an action.
 f<-function(x) {
   S <- x[["salinity"]]
   T <- x[["temperature"]]
@@ -115,10 +124,10 @@ Other functions that handle data-quality flags: \code{\link{handleFlags,argo-met
 Other things related to \code{ctd} data: \code{\link{[[,ctd-method}},
   \code{\link{[[<-,ctd-method}}, \code{\link{as.ctd}},
   \code{\link{cnvName2oceName}}, \code{\link{ctd-class}},
-  \code{\link{ctdAddColumn}}, \code{\link{ctdDecimate}},
-  \code{\link{ctdFindProfiles}}, \code{\link{ctdRaw}},
-  \code{\link{ctdTrim}}, \code{\link{ctdUpdateHeader}},
-  \code{\link{ctd}}, \code{\link{gps-class}},
+  \code{\link{ctdDecimate}}, \code{\link{ctdFindProfiles}},
+  \code{\link{ctdRaw}}, \code{\link{ctdTrim}},
+  \code{\link{ctd}}, \code{\link{oceNames2whpNames}},
+  \code{\link{oceUnits2whpUnits}},
   \code{\link{plot,ctd-method}}, \code{\link{plotProfile}},
   \code{\link{plotScan}}, \code{\link{plotTS}},
   \code{\link{read.ctd.itp}}, \code{\link{read.ctd.odf}},
@@ -127,6 +136,6 @@ Other things related to \code{ctd} data: \code{\link{[[,ctd-method}},
   \code{\link{read.ctd.woce}}, \code{\link{read.ctd}},
   \code{\link{subset,ctd-method}},
   \code{\link{summary,ctd-method}},
-  \code{\link{woceNames2oceNames}}, \code{\link{write.ctd}}
+  \code{\link{woceNames2oceNames}},
+  \code{\link{woceUnit2oceUnit}}, \code{\link{write.ctd}}
 }
-

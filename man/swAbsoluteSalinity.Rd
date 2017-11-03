@@ -4,8 +4,8 @@
 \alias{swAbsoluteSalinity}
 \title{Seawater absolute salinity, in GSW formulation}
 \usage{
-swAbsoluteSalinity(salinity, pressure = NULL, longitude = 300,
-  latitude = 30)
+swAbsoluteSalinity(salinity, pressure = NULL, longitude = NULL,
+  latitude = NULL)
 }
 \arguments{
 \item{salinity}{either practical salinity (in which case \code{temperature}
@@ -36,9 +36,6 @@ sa <- swAbsoluteSalinity(35.5, 300, 260, 16)
 stopifnot(abs(35.671358392019094 - sa) < 00.000000000000010)
 }
 
-}
-\author{
-Dan Kelley
 }
 \references{
 McDougall, T.J. and P.M. Barker, 2011: Getting started with
@@ -72,4 +69,6 @@ Other functions that calculate seawater properties: \code{\link{T68fromT90}},
   \code{\link{swTheta}}, \code{\link{swViscosity}},
   \code{\link{swZ}}
 }
-
+\author{
+Dan Kelley
+}

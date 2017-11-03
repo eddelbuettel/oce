@@ -2,7 +2,7 @@
 % Please edit documentation in R/ctd.sbe.R
 \name{read.ctd.sbe}
 \alias{read.ctd.sbe}
-\title{Read an Seabird CTD File}
+\title{Read a Seabird CTD File}
 \usage{
 read.ctd.sbe(file, columns = NULL, station = NULL, missingValue,
   monitor = FALSE, debug = getOption("oceDebug"), processingLog, ...)
@@ -30,7 +30,12 @@ missing-value flag found in the data. For Seabird (\code{.cnv}) files, there is
 usually no need to set \code{missingValue}, because it can be inferred from the
 header (typically as -9.990e-29). Set \code{missingValue=NULL} to turn off
 missing-value detection, even in \code{.cnv} files that contain missing-value
-codes in their headers.}
+codes in their headers. If \code{missingValue} is not specified,
+then an attempt is made to infer such a value from the data, by testing
+whether salinity and/or temperature has a minimum that is under -8 in value;
+this should catch common values in files, without false positives. A warning
+will be issued in this case, and a note inserted in the processing log of
+the return value.}
 
 \item{monitor}{Boolean, set to \code{TRUE} to provide an indication of
 progress.  This is useful if \code{filename} is a wildcard.}
@@ -54,19 +59,19 @@ variable across data formats, because the meta-information provided
 in those formats varies widely.
 }
 \description{
-Read an Seabird CTD File
+Read a Seabird CTD File
 }
 \details{
 This function reads files stored in Seabird \code{.cnv} format.
 Note that these files can contain multiple sensors for a given field. For example,
-the file might contain a column named \code{t090C} for one 
+the file might contain a column named \code{t090C} for one
 temperature sensor and \code{t190C} for a second. The first will be denoted
 \code{temperature} in the \code{data} slot of the return value, and the second
 will be denoted \code{temperature1}. This means that the first sensor
 will be used in any future processing that accesses \code{temperature}. This
 is for convenience of processing, and it does not pose a limitation, because the
 data from the second sensor are also available as e.g. \code{x[["temperature1"]]},
-where \code{x} is the name of the returned value.  For the details of the 
+where \code{x} is the name of the returned value.  For the details of the
 mapping from \code{.cnv} names to \code{ctd} names, see \code{\link{cnvName2oceName}}.
 
 The original data names as stored in \code{file} are stored within the \code{metadata}
@@ -74,6 +79,27 @@ slot as \code{dataNamesOriginal}, and are displayed with \code{summary} alongsid
 numerical summary. See the Appendix VI of [2] for the meanings of these
 names (in the "Short Name" column of the table spanning pages 161 through 172).
 }
+\section{A note on scales}{
+
+The user may encounter data files with a variety of scales for temperature and
+salinity. Oce keeps track of these scales in the units it sets up for the stored
+variables. For example, if \code{A} is a CTD object, then
+\code{A[["temperatureUnit"]]$scale} is a character string that will indicate the scale.
+Modern-day data will have \code{"ITS-90"} for that scale, and old data may have
+\code{"IPTS-68"}. The point of saving the scale in this way is so that the various
+formulas that deal with water properties can account for the scale, e.g. converting
+from numerical values saved on the \code{"IPTS-68"} scale to the newer scale, using
+\code{\link{T90fromT68}} before doing calculations that are expressed in
+terms of the \code{"ITS-90"} scale. This is taken care of by retrieving temperatures
+with the accessor function, e.g. writing \code{A[["temperature"]]} will either
+retrieve the stored values (if the scale is ITS-90) or converted values (if
+the scale is IPTS-68). Even though this procedure should work, users who
+really care about the details of their data are well-advised to do a couple
+of tests after examining the first data line of their data file in an editor.
+
+Note that reading a file that contains IPTS-68 temperatures produces a warning.
+}
+
 \examples{
 f <- system.file("extdata", "ctd.cnv", package="oce")
 ## Read the file in the normal way
@@ -83,12 +109,9 @@ d <- read.ctd(f, columns=list(
   salinity=list(name="salt", unit=list(expression(), scale="PSS-78"))))
 
 }
-\author{
-Dan Kelley
-}
 \references{
 1. The Sea-Bird SBE 19plus profiler is described at
-\url{http://www.seabird.com/products/spec_sheets/19plusdata.htm}.  Some more
+\code{http://www.seabird.com/products/spec_sheets/19plusdata.htm}.  Some more
 information is given in the Sea-Bird data-processing manaual
 \url{http://www.seabird.com/document/sbe-data-processing-manual}.
 
@@ -98,11 +121,11 @@ information is given in the Sea-Bird data-processing manaual
 Other things related to \code{ctd} data: \code{\link{[[,ctd-method}},
   \code{\link{[[<-,ctd-method}}, \code{\link{as.ctd}},
   \code{\link{cnvName2oceName}}, \code{\link{ctd-class}},
-  \code{\link{ctdAddColumn}}, \code{\link{ctdDecimate}},
-  \code{\link{ctdFindProfiles}}, \code{\link{ctdRaw}},
-  \code{\link{ctdTrim}}, \code{\link{ctdUpdateHeader}},
-  \code{\link{ctd}}, \code{\link{gps-class}},
-  \code{\link{handleFlags,ctd-method}},
+  \code{\link{ctdDecimate}}, \code{\link{ctdFindProfiles}},
+  \code{\link{ctdRaw}}, \code{\link{ctdTrim}},
+  \code{\link{ctd}}, \code{\link{handleFlags,ctd-method}},
+  \code{\link{oceNames2whpNames}},
+  \code{\link{oceUnits2whpUnits}},
   \code{\link{plot,ctd-method}}, \code{\link{plotProfile}},
   \code{\link{plotScan}}, \code{\link{plotTS}},
   \code{\link{read.ctd.itp}}, \code{\link{read.ctd.odf}},
@@ -110,6 +133,9 @@ Other things related to \code{ctd} data: \code{\link{[[,ctd-method}},
   \code{\link{read.ctd.woce}}, \code{\link{read.ctd}},
   \code{\link{subset,ctd-method}},
   \code{\link{summary,ctd-method}},
-  \code{\link{woceNames2oceNames}}, \code{\link{write.ctd}}
+  \code{\link{woceNames2oceNames}},
+  \code{\link{woceUnit2oceUnit}}, \code{\link{write.ctd}}
 }
-
+\author{
+Dan Kelley
+}

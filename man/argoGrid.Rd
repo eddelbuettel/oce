@@ -2,7 +2,7 @@
 % Please edit documentation in R/argo.R
 \name{argoGrid}
 \alias{argoGrid}
-\title{Grid a Argo Drifter Path}
+\title{Grid Argo float data}
 \usage{
 argoGrid(argo, p, debug = getOption("oceDebug"), ...)
 }
@@ -30,7 +30,7 @@ An object of \code{\link{argo-class}} that contains a pressure matrix
 with constant values along the first index.
 }
 \description{
-Grid a Argo drifter, by interpolating to fixed pressure levels.
+Grid an Argo float, by interpolating to fixed pressure levels.
 The gridding is done with \code{\link{approx}}.  If there is
 sufficient user demand, other methods may be added, by analogy to
 \code{\link{sectionGrid}}.
@@ -44,6 +44,7 @@ from those data.  This function produces a warning to this effect. The
 recommended practice is to use \code{\link{handleFlags}} or some other means to
 deal with flags before calling the present function.
 }
+
 \examples{
 library(oce)
 data(argo)
@@ -56,16 +57,16 @@ imagep(t, z, t(g[['temperature']]), ylim=c(-100,0), zlim=c(0,20))
 imagep(t, z, t(g[['salinity']]), ylim=c(-100,0))
 
 }
-\author{
-Dan Kelley and Clark Richards
-}
 \seealso{
 Other things related to \code{argo} data: \code{\link{[[,argo-method}},
   \code{\link{[[<-,argo-method}}, \code{\link{argo-class}},
-  \code{\link{argo}}, \code{\link{as.argo}},
+  \code{\link{argoNames2oceNames}}, \code{\link{argo}},
+  \code{\link{as.argo}},
   \code{\link{handleFlags,argo-method}},
   \code{\link{plot,argo-method}}, \code{\link{read.argo}},
   \code{\link{subset,argo-method}},
   \code{\link{summary,argo-method}}
 }
-
+\author{
+Dan Kelley and Clark Richards
+}

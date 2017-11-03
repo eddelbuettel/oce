@@ -26,19 +26,19 @@ Checks \code{coastlineWorld}, \code{coastlineWorldFine} and
 \code{coastlineWorldCoarse}, in that order, to find the one most appropriate
 for the locale.
 }
-\author{
-Dan Kelley
-}
 \seealso{
 Other things related to \code{coastline} data: \code{\link{[[,coastline-method}},
   \code{\link{[[<-,coastline-method}},
   \code{\link{as.coastline}},
   \code{\link{coastline-class}},
   \code{\link{coastlineCut}}, \code{\link{coastlineWorld}},
+  \code{\link{download.coastline}},
   \code{\link{plot,coastline-method}},
   \code{\link{read.coastline.openstreetmap}},
   \code{\link{read.coastline.shapefile}},
   \code{\link{subset,coastline-method}},
   \code{\link{summary,coastline-method}}
 }
-
+\author{
+Dan Kelley
+}

@@ -12,9 +12,6 @@ done with \code{\link{[[,topo-method}} and replacement with
 \code{\link{[[<-,topo-method}}.  The key data, stored within the data slot,
 are: \code{longititude}, \code{latitude}, and \code{z}.
 }
-\author{
-Dan Kelley
-}
 \seealso{
 Other classes provided by \code{oce}: \code{\link{adp-class}},
   \code{\link{adv-class}}, \code{\link{argo-class}},
@@ -29,9 +26,12 @@ Other classes provided by \code{oce}: \code{\link{adp-class}},
 
 Other things related to \code{topo} data: \code{\link{[[,topo-method}},
   \code{\link{[[<-,topo-method}}, \code{\link{as.topo}},
+  \code{\link{download.topo}},
   \code{\link{plot,topo-method}}, \code{\link{read.topo}},
   \code{\link{subset,topo-method}},
   \code{\link{summary,topo-method}},
   \code{\link{topoInterpolate}}, \code{\link{topoWorld}}
 }
-
+\author{
+Dan Kelley
+}

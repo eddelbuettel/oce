@@ -79,6 +79,7 @@ match will work; this is accomplished by using \code{\link{pmatch}}.
 
 If none of the above-listed conditions holds, then \code{NULL} is returned.
 }
+
 \examples{
 data(topoWorld)
 dim(topoWorld[['z']])
@@ -108,11 +109,10 @@ Other functions that extract parts of \code{oce} objects: \code{\link{[[,adp-met
   \code{\link{[[<-,adv-method}}
 
 Other things related to \code{topo} data: \code{\link{[[<-,topo-method}},
-  \code{\link{as.topo}}, \code{\link{plot,topo-method}},
-  \code{\link{read.topo}},
+  \code{\link{as.topo}}, \code{\link{download.topo}},
+  \code{\link{plot,topo-method}}, \code{\link{read.topo}},
   \code{\link{subset,topo-method}},
   \code{\link{summary,topo-method}},
   \code{\link{topo-class}}, \code{\link{topoInterpolate}},
   \code{\link{topoWorld}}
 }
-

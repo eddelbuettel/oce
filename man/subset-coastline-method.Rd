@@ -20,9 +20,6 @@ A \code{coastline} object.
 \description{
 Summarizes coastline length, bounding box, etc.
 }
-\author{
-Dan Kelley
-}
 \seealso{
 Other things related to \code{coastline} data: \code{\link{[[,coastline-method}},
   \code{\link{[[<-,coastline-method}},
@@ -30,9 +27,28 @@ Other things related to \code{coastline} data: \code{\link{[[,coastline-method}}
   \code{\link{coastline-class}},
   \code{\link{coastlineBest}}, \code{\link{coastlineCut}},
   \code{\link{coastlineWorld}},
+  \code{\link{download.coastline}},
   \code{\link{plot,coastline-method}},
   \code{\link{read.coastline.openstreetmap}},
   \code{\link{read.coastline.shapefile}},
   \code{\link{summary,coastline-method}}
-}
 
+Other functions that subset \code{oce} objects: \code{\link{subset,adp-method}},
+  \code{\link{subset,adv-method}},
+  \code{\link{subset,amsr-method}},
+  \code{\link{subset,argo-method}},
+  \code{\link{subset,cm-method}},
+  \code{\link{subset,ctd-method}},
+  \code{\link{subset,echosounder-method}},
+  \code{\link{subset,lobo-method}},
+  \code{\link{subset,met-method}},
+  \code{\link{subset,oce-method}},
+  \code{\link{subset,odf-method}},
+  \code{\link{subset,rsk-method}},
+  \code{\link{subset,sealevel-method}},
+  \code{\link{subset,section-method}},
+  \code{\link{subset,topo-method}}
+}
+\author{
+Dan Kelley
+}

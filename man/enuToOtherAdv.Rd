@@ -11,17 +11,20 @@ enuToOtherAdv(x, heading = 0, pitch = 0, roll = 0,
 \item{x}{An \code{adv} object, i.e. one inheriting from \code{\link{adv-class}}.}
 
 \item{heading}{number or vector of numbers, giving the angle, in degrees, to
-be added to the heading.  See \dQuote{Details}.}
+be added to the heading. If this has length less than the number of velocity
+sampling times, then it will be extended using \code{\link{rep}}.}
 
 \item{pitch}{as \code{heading} but for pitch.}
 
 \item{roll}{as \code{heading} but for roll.}
 
-\item{debug}{An integer specifying whether debugging information is
+\item{debug}{an integer specifying whether debugging information is
 to be printed during the processing. This is a general parameter that
 is used by many \code{oce} functions. Generally, setting \code{debug=0}
 turns off the printing, while higher values suggest that more information
-be printed.}
+be printed. If one function calls another, it usually reduces the value of
+\code{debug} first, so that a user can often obtain deeper debugging
+by specifying higher \code{debug} values.}
 }
 \description{
 Convert ADV velocity components from an enu-based coordinate system to
@@ -39,9 +42,6 @@ NOTE: this function works similarly to \code{\link{xyzToEnuAdv}}, except
 that in the present function, it makes no difference whether the instrument
 points up or down, etc.
 }
-\author{
-Dan Kelley
-}
 \seealso{
 Other things related to \code{adv} data: \code{\link{[[,adv-method}},
   \code{\link{[[<-,adv-method}}, \code{\link{adv-class}},
@@ -57,4 +57,6 @@ Other things related to \code{adv} data: \code{\link{[[,adv-method}},
   \code{\link{toEnu}}, \code{\link{velocityStatistics}},
   \code{\link{xyzToEnuAdv}}, \code{\link{xyzToEnu}}
 }
-
+\author{
+Dan Kelley
+}

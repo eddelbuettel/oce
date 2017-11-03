@@ -31,9 +31,9 @@ An object of \code{\link{section-class}}.
 }
 \description{
 Create a section based on columnar data, or a set of \code{\link{oce-class}}
-objects that can be coerced to CTD form with \code{\link{as.ctd}}.
+objects that can be coerced to a section. There are three cases.
 
-If the first argument is a numerical vector, then it is taken to be the
+Case 1. If the first argument is a numerical vector, then it is taken to be the
 salinity, and \code{\link{factor}} is applied to \code{station} to break the
 data up into chunks that are assembled into \code{\link{ctd-class}} objects with
 \code{\link{as.ctd}} and combined to make a \code{\link{section-class}} object
@@ -42,15 +42,16 @@ that are already partly processed; if original CTD data are available, the next
 mode is preferred, because it permits the storage of much more data and metadata
 in the CTD object.
 
-If the first argument is a list containing oce objects that can be coerced into
-CTD form with \code{\link{as.ctd}} -- or a character vector containing the names
-of such objects that are defined in the calling environment -- then those
-objects are combined to form the station, and all other arguments are ignored.
-This is the best way to call \code{as.section}.
+Case 2. If the first argument is a list containing oce objects, then those
+objects are taken as profiles of something.  A requirement for this
+to work is that every element of the list contains both \code{longitude}
+and \code{latitude} in either the \code{metadata} or \code{data} slot (in
+the latter case, the mean value is recorded in the section object)
+and that every element also contains \code{pressure} in its \code{data} slot.
 
-If the first argument is a \code{\link{argo-class}} object, then the profiles it
-contains are turned into \code{\link{ctd-class}} object, and these are assembled
-into a section to be returned.
+Case 3. If the first argument is a \code{\link{argo-class}} object, then
+the profiles it contains are turned into \code{\link{ctd-class}} objects,
+and these are assembled into a section to be returned.
 }
 \examples{
 library(oce)
@@ -75,9 +76,6 @@ sec3 <- as.section(subset(argo, profile<5))
 summary(sec3)
 
 }
-\author{
-Dan Kelley
-}
 \seealso{
 Other things related to \code{section} data: \code{\link{[[,section-method}},
   \code{\link{[[<-,section-method}},
@@ -90,4 +88,6 @@ Other things related to \code{section} data: \code{\link{[[,section-method}},
   \code{\link{subset,section-method}},
   \code{\link{summary,section-method}}
 }
-
+\author{
+Dan Kelley
+}

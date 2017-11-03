@@ -26,7 +26,26 @@ scale using \code{\link{T90fromT68}}.
 }
 \seealso{
 A similar dataset (trimmed to the downcast) is available as
-\code{\link{ctd}}.
+\code{data(\link{ctd})}.
+
+Other things related to \code{ctd} data: \code{\link{[[,ctd-method}},
+  \code{\link{[[<-,ctd-method}}, \code{\link{as.ctd}},
+  \code{\link{cnvName2oceName}}, \code{\link{ctd-class}},
+  \code{\link{ctdDecimate}}, \code{\link{ctdFindProfiles}},
+  \code{\link{ctdTrim}}, \code{\link{ctd}},
+  \code{\link{handleFlags,ctd-method}},
+  \code{\link{oceNames2whpNames}},
+  \code{\link{oceUnits2whpUnits}},
+  \code{\link{plot,ctd-method}}, \code{\link{plotProfile}},
+  \code{\link{plotScan}}, \code{\link{plotTS}},
+  \code{\link{read.ctd.itp}}, \code{\link{read.ctd.odf}},
+  \code{\link{read.ctd.sbe}},
+  \code{\link{read.ctd.woce.other}},
+  \code{\link{read.ctd.woce}}, \code{\link{read.ctd}},
+  \code{\link{subset,ctd-method}},
+  \code{\link{summary,ctd-method}},
+  \code{\link{woceNames2oceNames}},
+  \code{\link{woceUnit2oceUnit}}, \code{\link{write.ctd}}
 
 Other datasets provided with \code{oce}: \code{\link{adp}},
   \code{\link{adv}}, \code{\link{argo}}, \code{\link{cm}},
@@ -37,23 +56,4 @@ Other datasets provided with \code{oce}: \code{\link{adp}},
   \code{\link{sealevelTuktoyaktuk}},
   \code{\link{sealevel}}, \code{\link{section}},
   \code{\link{topoWorld}}, \code{\link{wind}}
-
-Other things related to \code{ctd} data: \code{\link{[[,ctd-method}},
-  \code{\link{[[<-,ctd-method}}, \code{\link{as.ctd}},
-  \code{\link{cnvName2oceName}}, \code{\link{ctd-class}},
-  \code{\link{ctdAddColumn}}, \code{\link{ctdDecimate}},
-  \code{\link{ctdFindProfiles}}, \code{\link{ctdTrim}},
-  \code{\link{ctdUpdateHeader}}, \code{\link{ctd}},
-  \code{\link{gps-class}},
-  \code{\link{handleFlags,ctd-method}},
-  \code{\link{plot,ctd-method}}, \code{\link{plotProfile}},
-  \code{\link{plotScan}}, \code{\link{plotTS}},
-  \code{\link{read.ctd.itp}}, \code{\link{read.ctd.odf}},
-  \code{\link{read.ctd.sbe}},
-  \code{\link{read.ctd.woce.other}},
-  \code{\link{read.ctd.woce}}, \code{\link{read.ctd}},
-  \code{\link{subset,ctd-method}},
-  \code{\link{summary,ctd-method}},
-  \code{\link{woceNames2oceNames}}, \code{\link{write.ctd}}
 }
-

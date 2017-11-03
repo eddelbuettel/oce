@@ -4,8 +4,8 @@
 \alias{read.echosounder}
 \title{Read an Echosounder File}
 \usage{
-read.echosounder(file, channel = 1, soundSpeed = swSoundSpeed(35, 10, 50),
-  tz = getOption("oceTz"), debug = getOption("oceDebug"), processingLog)
+read.echosounder(file, channel = 1, soundSpeed, tz = getOption("oceTz"),
+  debug = getOption("oceDebug"), processingLog)
 }
 \arguments{
 \item{file}{a connection or a character string giving the name of the file
@@ -14,9 +14,10 @@ to load.}
 \item{channel}{sequence number of channel to extract, for multi-channel
 files.}
 
-\item{soundSpeed}{sound speed, in m/s.  (The documents on Biosonics
-instruments suggest that this could be inferred from values in the file
-header, but test files proved this to be false.)}
+\item{soundSpeed}{sound speed, in m/s. If not provided, this is calculated
+using \code{\link{swSoundSpeed}(35, 15, 30, eos="unesco")}.  (In theory,
+it could be calculated using the temperature and salinity that are stored
+in the data file, but these will just be nominal values, anyway.}
 
 \item{tz}{character string indicating time zone to be assumed in the data.}
 
@@ -46,9 +47,7 @@ narrow beam, actually, given the confusing endian tricks being played).  In
 the split-beam case, only amplitude is read, with the x-axis and y-axis
 angle data being ignored.
 }
-\author{
-Dan Kelley, with help from Clark Richards
-}
+
 \references{
 Various echousounder instruments provided by BioSonics are
 described at the company website, \url{http://www.biosonicsinc.com/}.  The
@@ -74,4 +73,6 @@ Other things related to \code{echosounder} data: \code{\link{[[,echosounder-meth
   \code{\link{subset,echosounder-method}},
   \code{\link{summary,echosounder-method}}
 }
-
+\author{
+Dan Kelley, with help from Clark Richards
+}

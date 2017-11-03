@@ -23,16 +23,16 @@ An object of \code{\link{topo-class}}.
 \description{
 Coerce Data into Topo Object
 }
-\author{
-Dan Kelley
-}
 \seealso{
 Other things related to \code{topo} data: \code{\link{[[,topo-method}},
   \code{\link{[[<-,topo-method}},
+  \code{\link{download.topo}},
   \code{\link{plot,topo-method}}, \code{\link{read.topo}},
   \code{\link{subset,topo-method}},
   \code{\link{summary,topo-method}},
   \code{\link{topo-class}}, \code{\link{topoInterpolate}},
   \code{\link{topoWorld}}
 }
-
+\author{
+Dan Kelley
+}

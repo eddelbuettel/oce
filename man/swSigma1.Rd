@@ -4,8 +4,8 @@
 \alias{swSigma1}
 \title{Seawater potential density anomaly referenced to 1000db pressure}
 \usage{
-swSigma1(salinity, temperature = NULL, pressure = NULL, longitude = 300,
-  latitude = 30, eos = getOption("oceEOS", default = "gsw"))
+swSigma1(salinity, temperature = NULL, pressure = NULL, longitude = NULL,
+  latitude = NULL, eos = getOption("oceEOS", default = "gsw"))
 }
 \arguments{
 \item{salinity}{either practical salinity (in which case \code{temperature}
@@ -44,9 +44,6 @@ Definition:
 \eqn{\sigma_1=\sigma_\theta=\rho(S,\theta(S,t,p),1000}{sigma_1=sigma_theta=rho(S,theta(S,t,p),1000)}
 - 1000 kg/m\eqn{^3}{^3}.
 }
-\author{
-Dan Kelley
-}
 \references{
 See citations provided in the \code{\link{swRho}} documentation.
 }
@@ -73,4 +70,6 @@ Other functions that calculate seawater properties: \code{\link{T68fromT90}},
   \code{\link{swTheta}}, \code{\link{swViscosity}},
   \code{\link{swZ}}
 }
-
+\author{
+Dan Kelley
+}

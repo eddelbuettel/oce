@@ -4,7 +4,7 @@
 \alias{swTFreeze}
 \title{Seawater freezing temperature}
 \usage{
-swTFreeze(salinity, pressure = 0, longitude = 300, latitude = 30,
+swTFreeze(salinity, pressure = 0, longitude = NULL, latitude = NULL,
   saturation_fraction = 1, eos = getOption("oceEOS", default = "gsw"))
 }
 \arguments{
@@ -38,9 +38,6 @@ salinity and pressure values are extracted and used to for the calculation.
 \examples{
 swTFreeze(salinity=40, pressure=500, eos="unesco") # -2.588567 degC
 
-}
-\author{
-Dan Kelley
 }
 \references{
 [1] Fofonoff, P. and R. C. Millard Jr, 1983. Algorithms for
@@ -80,4 +77,6 @@ Other functions that calculate seawater properties: \code{\link{T68fromT90}},
   \code{\link{swTheta}}, \code{\link{swViscosity}},
   \code{\link{swZ}}
 }
-
+\author{
+Dan Kelley
+}

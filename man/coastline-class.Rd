@@ -12,9 +12,6 @@ plotted with \code{\link{plot,coastline-method}} or summarized with
 objects may be retrieved with \code{\link{[[,coastline-method}}
 or replaced with \code{\link{[[<-,coastline-method}}.
 }
-\author{
-Dan Kelley
-}
 \seealso{
 Other classes provided by \code{oce}: \code{\link{adp-class}},
   \code{\link{adv-class}}, \code{\link{argo-class}},
@@ -31,10 +28,13 @@ Other things related to \code{coastline} data: \code{\link{[[,coastline-method}}
   \code{\link{[[<-,coastline-method}},
   \code{\link{as.coastline}}, \code{\link{coastlineBest}},
   \code{\link{coastlineCut}}, \code{\link{coastlineWorld}},
+  \code{\link{download.coastline}},
   \code{\link{plot,coastline-method}},
   \code{\link{read.coastline.openstreetmap}},
   \code{\link{read.coastline.shapefile}},
   \code{\link{subset,coastline-method}},
   \code{\link{summary,coastline-method}}
 }
-
+\author{
+Dan Kelley
+}

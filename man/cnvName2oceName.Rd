@@ -12,11 +12,13 @@ cnvName2oceName(h, columns = NULL, debug = getOption("oceDebug"))
 \item{columns}{Optional list containing name correspondances, as described for
 \code{\link{read.ctd.sbe}}.}
 
-\item{debug}{An integer specifying whether debugging information is
+\item{debug}{an integer specifying whether debugging information is
 to be printed during the processing. This is a general parameter that
 is used by many \code{oce} functions. Generally, setting \code{debug=0}
 turns off the printing, while higher values suggest that more information
-be printed.}
+be printed. If one function calls another, it usually reduces the value of
+\code{debug} first, so that a user can often obtain deeper debugging
+by specifying higher \code{debug} values.}
 }
 \value{
 a list containing \code{name} (the oce name), \code{nameOriginal} (the SBE name) and \code{unit}.
@@ -29,8 +31,9 @@ the present function is based on inspection of a suite of CNV files
 available to the \code{oce} developers.
 }
 \details{
-A few sample header lines to be decoded are as follows.
+A few sample header lines that have been encountered are:
 \preformatted{
+# name 4 = t068: temperature, IPTS-68 [deg C]
 # name 3 = t090C: Temperature [ITS-90, deg C]
 # name 4 = t190C: Temperature, 2 [ITS-90, deg C]
 }
@@ -39,13 +42,13 @@ try to infer the name from the characters between the "\code{=}"
 and "\code{:}" characters, because the material after the colon
 seems to vary more between sample files.
 
-The table given below indicates the translation patterns used. These are 
+The table given below indicates the translation patterns used. These are
 taken from [1]. The \code{.cnv} convention for multiple sensors is to
 include optional extra digits in the name, and these are indicated
 with \code{~} in the table; their decoding is done with \code{\link{grep}}.
 
 It is important to note that this table is by no means complete, since there
-are a great many SBE names listed in their document [1], plus names 
+are a great many SBE names listed in their document [1], plus names
 not listed there but present in data files
 supplied by prominent archiving agencies. If an SBE name is not recogized,
 then the oce name is set to that SBE name. This can cause problems in
@@ -67,6 +70,7 @@ variants.)
   \strong{Key}       \tab \strong{Result}                     \tab \strong{Unit;scale} \tab \strong{Notes} \cr
   \code{alt}         \tab \code{altimeter}                    \tab m                   \tab    \cr
   \code{altM}        \tab \code{altimeter}                    \tab m                   \tab    \cr
+  \code{accM}        \tab \code{acceleration}                 \tab m/s^2               \tab    \cr
   \code{bat~}        \tab \code{beamAttenuation}              \tab 1/m                 \tab    \cr
   \code{C2-C1S/m}    \tab \code{conductivityDifference}       \tab S/m                 \tab    \cr
   \code{C2-C1mS/cm}  \tab \code{conductivityDifference}       \tab mS/cm               \tab    \cr
@@ -121,27 +125,33 @@ variants.)
   \code{prSM}        \tab \code{pressure}                     \tab dbar                 \tab   \cr
   \code{prDM}        \tab \code{pressure}                     \tab dbar; digiquartz     \tab   \cr
   \code{prdE}        \tab \code{pressure}                     \tab psi; strain gauge    \tab 2 \cr
+  \code{prDE}        \tab \code{pressure}                     \tab psi; digiquartz      \tab 2 \cr
   \code{prdM}        \tab \code{pressure}                     \tab dbar; strain gauge   \tab   \cr
   \code{prSM}        \tab \code{pressure}                     \tab dbar; strain gauge   \tab   \cr
   \code{ptempC}      \tab \code{pressureTemperature}          \tab degC; ITS-90         \tab 3 \cr
   \code{pumps}       \tab \code{pumpStatus}                   \tab                      \tab   \cr
+  \code{rhodflTC~}   \tab \code{Rhodamine}                    \tab ppb; Turner Cyclops  \tab   \cr
   \code{sal~~}       \tab \code{salinity}                     \tab -, PSS-78            \tab 4 \cr
-  \code{seaTurbMtr~} \tab \code{turbidity}                    \tab FTU; SeaPoint        \tab   \cr
   \code{sbeox~ML/L}  \tab \code{oxygen}                       \tab ml/l; SBE43          \tab   \cr
-  \code{sbeox~Mm/Kg} \tab \code{oxygen}                       \tab ml/l; SBE43          \tab   \cr
+  \code{sbeox~Mm/Kg} \tab \code{oxygen}                       \tab umol/kg; SBE43       \tab   \cr
+  \code{sbeox~Mm/L}  \tab \code{oxygen}                       \tab umol/l; SBE43        \tab   \cr
   \code{sbeox~PS}    \tab \code{oxygen}                       \tab percent; SBE43       \tab   \cr
   \code{sbeox~V}     \tab \code{oxygenRaw}                    \tab V; SBE43             \tab   \cr
   \code{scan}        \tab \code{scan}                         \tab -                    \tab   \cr
+  \code{seaTurbMtr~} \tab \code{turbidity}                    \tab FTU; SeaPoint        \tab   \cr
   \code{secS-priS}   \tab \code{salinityDifference}           \tab -, PSS-78            \tab   \cr
   \code{sigma-t}     \tab \code{sigmaT}                       \tab kg/m^3               \tab   \cr
   \code{sigma-theta} \tab \code{sigmaTheta}                   \tab kg/m^3               \tab 5 \cr
+  \code{sigma-é}     \tab \code{sigmaTheta}                   \tab kg/m^3               \tab 5 \cr
   \code{spar}        \tab \code{spar}                         \tab -                    \tab   \cr
+  \code{specc}       \tab \code{conductivity}                 \tab uS/cm                \tab   \cr
   \code{sva}         \tab \code{specificVolumeAnomaly}        \tab 1e-8 m^3/kg;         \tab   \cr
   \code{svCM~}       \tab \code{soundSpeed}                   \tab m/s; Chen-Millero    \tab   \cr
-  \code{T2~68C}      \tab \code{temperatureDifference}        \tab degC; IPTS-68        \tab   \cr 
-  \code{T2~90C}      \tab \code{temperatureDifference}        \tab degC; ITS-90         \tab   \cr 
-  \code{t~68}        \tab \code{temperature}                  \tab degC; IPTS-68        \tab   \cr 
-  \code{t~90}        \tab \code{temperature}                  \tab degC; ITS-90         \tab   \cr 
+  \code{T2~68C}      \tab \code{temperatureDifference}        \tab degC; IPTS-68        \tab   \cr
+  \code{T2~90C}      \tab \code{temperatureDifference}        \tab degC; ITS-90         \tab   \cr
+  \code{t~68}        \tab \code{temperature}                  \tab degC; IPTS-68        \tab   \cr
+  \code{t~90}        \tab \code{temperature}                  \tab degC; ITS-90         \tab   \cr
+  \code{t~68}        \tab \code{temperature}                  \tab degC; IPTS-68        \tab   \cr
   \code{t~68C}       \tab \code{temperature}                  \tab degC; IPTS-68        \tab   \cr
   \code{t~90C}       \tab \code{temperature}                  \tab degC; ITS-90         \tab   \cr
   \code{t090Cm}      \tab \code{temperature}                  \tab degC; ITS-90         \tab   \cr
@@ -155,9 +165,9 @@ variants.)
   \code{t190C}       \tab \code{temperature}                  \tab degC; ITS-90         \tab   \cr
   \code{tnc290C}     \tab \code{temperature}                  \tab degC; ITS-90         \tab   \cr
   \code{tnc268C}     \tab \code{temperature}                  \tab degC; IPTS-68        \tab   \cr
-  \code{t3890C}      \tab \code{temperature}                  \tab degC; ITS-90         \tab   \cr
+  \code{t3890C~}     \tab \code{temperature}                  \tab degC; ITS-90         \tab   \cr
   \code{t38~90C}     \tab \code{temperature}                  \tab degC; ITS-90         \tab   \cr
-  \code{t3868C}      \tab \code{temperature}                  \tab degC; IPTS-68        \tab   \cr
+  \code{t3868C~}     \tab \code{temperature}                  \tab degC; IPTS-68        \tab   \cr
   \code{t38~38C}     \tab \code{temperature}                  \tab degC; IPTS-68        \tab   \cr
   \code{timeH}       \tab \code{time}                         \tab hour; elapsed        \tab   \cr
   \code{timeJ}       \tab \code{time}                         \tab day; elapsed         \tab   \cr
@@ -166,14 +176,22 @@ variants.)
   \code{timeN}       \tab \code{time}                         \tab s; NMEA since Jan 1, 1970\tab\cr
   \code{timeQ}       \tab \code{time}                         \tab s; NMEA since Jan 1, 2000\tab\cr
   \code{timeS}       \tab \code{time}                         \tab s; elapsed           \tab   \cr
+  \code{turbflTC~}   \tab \code{turbidity}                    \tab NTU; Turner Cyclops  \tab   \cr
+  \code{turbflTCdiff}\tab \code{turbidityDifference}          \tab NTU; Turner Cyclops  \tab   \cr
+  \code{turbWETbb~}  \tab \code{turbidity}                    \tab 1/(m*sr); WET Labs ECO\tab   \cr
+  \code{turbWETbbdiff}\tab \code{turbidityDifference}         \tab 1/(m*sr); WET Labs ECO\tab   \cr
+  \code{turbWETntu~} \tab \code{turbidity}                    \tab NTU; WET Labs ECO    \tab   \cr
+  \code{turbWETntudiff}\tab \code{turbidityDifference}        \tab NTU; WET Labs ECO    \tab   \cr
   \code{upoly~}      \tab \code{upoly}                        \tab -                    \tab   \cr
   \code{user~}       \tab \code{user}                         \tab -                    \tab   \cr
   \code{v~~}         \tab \code{voltage}                      \tab V                    \tab   \cr
   \code{wetBAttn}    \tab \code{beamAttenuation}              \tab 1/m; WET Labs AC3    \tab   \cr
   \code{wetBTrans}   \tab \code{beamTransmission}             \tab percent; WET Labs AC3\tab   \cr
-  \code{wetCDOM}     \tab \code{fluorescence}                 \tab mg/m^3; WET Labs CDOM\tab   \cr
+  \code{wetCDOM~}    \tab \code{fluorescence}                 \tab mg/m^3; WET Labs CDOM\tab   \cr
+  \code{wetCDOMdiff} \tab \code{fluorescenceDifference}       \tab mg/m^3; WET Labs CDOM\tab   \cr
   \code{wetChAbs}    \tab \code{fluorescence}                 \tab 1/m; WET Labs AC3 absorption\tab   \cr
   \code{wetStar~}    \tab \code{fluorescence}                 \tab mg/m^3; WET Labs WETstar\tab   \cr
+  \code{wetStardiff} \tab \code{fluorescenceDifference}       \tab mg/m^3; WET Labs WETstar\tab   \cr
   \code{xmiss}       \tab \code{beamTransmission}             \tab percent; Chelsea/Seatech\tab \cr
   \code{xmiss~}      \tab \code{beamTransmission}             \tab percent; Chelsea/Seatech\tab \cr
 }
@@ -189,26 +207,18 @@ on the lookout for errors, since this is a rare situation.}
 within R or in the operating system.}
 }
 }
-\author{
-Dan Kelley
-}
 \references{
 1. A SBE data processing manual is at \url{http://www.seabird.com/document/sbe-data-processing-manual}.
 }
 \seealso{
-Other functions that interpret variable names and units from headers: \code{\link{ODFNames2oceNames}},
-  \code{\link{unitFromStringRsk}},
-  \code{\link{unitFromString}},
-  \code{\link{woceNames2oceNames}}
-
 Other things related to \code{ctd} data: \code{\link{[[,ctd-method}},
   \code{\link{[[<-,ctd-method}}, \code{\link{as.ctd}},
-  \code{\link{ctd-class}}, \code{\link{ctdAddColumn}},
-  \code{\link{ctdDecimate}}, \code{\link{ctdFindProfiles}},
-  \code{\link{ctdRaw}}, \code{\link{ctdTrim}},
-  \code{\link{ctdUpdateHeader}}, \code{\link{ctd}},
-  \code{\link{gps-class}},
+  \code{\link{ctd-class}}, \code{\link{ctdDecimate}},
+  \code{\link{ctdFindProfiles}}, \code{\link{ctdRaw}},
+  \code{\link{ctdTrim}}, \code{\link{ctd}},
   \code{\link{handleFlags,ctd-method}},
+  \code{\link{oceNames2whpNames}},
+  \code{\link{oceUnits2whpUnits}},
   \code{\link{plot,ctd-method}}, \code{\link{plotProfile}},
   \code{\link{plotScan}}, \code{\link{plotTS}},
   \code{\link{read.ctd.itp}}, \code{\link{read.ctd.odf}},
@@ -217,6 +227,17 @@ Other things related to \code{ctd} data: \code{\link{[[,ctd-method}},
   \code{\link{read.ctd.woce}}, \code{\link{read.ctd}},
   \code{\link{subset,ctd-method}},
   \code{\link{summary,ctd-method}},
-  \code{\link{woceNames2oceNames}}, \code{\link{write.ctd}}
-}
+  \code{\link{woceNames2oceNames}},
+  \code{\link{woceUnit2oceUnit}}, \code{\link{write.ctd}}
 
+Other functions that interpret variable names and units from headers: \code{\link{ODFNames2oceNames}},
+  \code{\link{oceNames2whpNames}},
+  \code{\link{oceUnits2whpUnits}},
+  \code{\link{unitFromStringRsk}},
+  \code{\link{unitFromString}},
+  \code{\link{woceNames2oceNames}},
+  \code{\link{woceUnit2oceUnit}}
+}
+\author{
+Dan Kelley
+}

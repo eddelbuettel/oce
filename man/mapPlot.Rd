@@ -5,7 +5,8 @@
 \title{Draw a Map}
 \usage{
 mapPlot(longitude, latitude, longitudelim, latitudelim, grid = TRUE, bg, fill,
-  border = NULL, col = NA, type = "l", axes = TRUE, drawBox = TRUE,
+  border = NULL, col = NULL, clip = TRUE, type = "polygon",
+  axes = TRUE, cex, cex.axis = 1, mgp = c(0, 0.5, 0), drawBox = TRUE,
   showHemi = TRUE, polarCircle = 0, lonlabel = NULL, latlabel = NULL,
   sides = NULL, projection = "+proj=moll", tissot = FALSE, trim = TRUE,
   debug = getOption("oceDebug"), ...)
@@ -20,16 +21,16 @@ argument is ignored).  If \code{longitude} is missing, both it and
 \item{latitude}{vector of latitudes of points to be plotted (ignored
 if the first argument contains both latitude and longitude).}
 
-\item{longitudelim}{Optional vector of length two, indicating the
+\item{longitudelim}{optional vector of length two, indicating the
 longitude limits of the plot. This value is used in the selection of
 longitude lines that are shown (and possibly
 labelled on the axes). In some cases, e.g. for polar views,
 this can lead to odd results, with some expected longitude lines
 being left out of the plot.  Altering \code{longitudelim} can
-often help in such cases, e.g. \code{longitudelim=c(-180,180)} will
+often help in such cases, e.g. \code{longitudelim=c(-180, 180)} will
 force the drawing of lines all around the globe.}
 
-\item{latitudelim}{Optinoal vector of length two, indicating
+\item{latitudelim}{optional vector of length two, indicating
 the latitude limits of the plot. This, together with \code{longitudelim}
 (and, importantly, the geometry of the plot device) is used in the
 selection of map scale.}
@@ -48,19 +49,39 @@ most projections this works quite well.  If not, one may set
 \item{fill}{\strong{(deprecated)} is a deprecated argument; see
 \link{oce-deprecated}.}
 
-\item{border}{colour of coastlines and international borders. The default,
-\code{NULL}, means to use \code{\link{par}("fg")}; see
-\code{\link{polygon}}.}
+\item{border}{colour of coastlines and international borders (ignored unless
+\code{type="polygon"}.}
 
-\item{col}{colour with which to fill coastline elements. The default,
-\code{NA}, is not to fill; see \code{\link{polygon}}.}
+\item{col}{either the colour for filling polygons (if \code{type="polygon"})
+or the colour of the points and line segments (if \code{type="p"},
+\code{type="l"}, or \code{type="o"}). If \code{col=NULL} then a default
+will be set: no coastline filling for the \code{type="polygon"} case,
+or black coastlines, for \code{type="p"}, \code{type="l"}, or
+\code{type="o"}.}
 
-\item{type}{value to indicate type of plot, as with
-\code{\link{par}("plot")}.}
+\item{clip}{logical value indicating whether to trim any coastline elements that lie wholly
+outside the plot region. This can prevent e.g. a problem of filling the whole plot area of
+an Arctic stereopolar view, because the projected trace for Antarctica lies outside all 
+other regions so the whole of the world ends up being "land".  Setting \code{clip=FALSE}
+disables this action, which may be of benefit in rare instances in the line connecting
+two points on a coastline may cross the plot domain, even if those points are outside
+that domain.}
+
+\item{type}{indication of type; may be \code{"polygon"}, for a filled polygon,
+\code{"p"} for points, \code{"l"} for line segments, or \code{"o"} for points
+overlain with line segments.}
 
 \item{axes}{logical value indicating whether to draw longitude and latitude
 values in the lower and left margin, respectively.  This may not work well
 for some projections or scales.}
+
+\item{cex}{character expansion factor for plot symbols,
+used if \code{type='p'} or any other value that yields symbols.}
+
+\item{cex.axis}{axis-label expansion factor (see \code{\link{par}}).}
+
+\item{mgp}{three-element numerical vector describing axis-label
+placement, passed to \code{\link{mapAxis}}.}
 
 \item{drawBox}{logical value indicating whether to draw a box around the plot.
 This is helpful for many projections at sub-global scale.}
@@ -77,10 +98,14 @@ to label on the indicated sides of plot, passed to
 simple customization.  If they are are not provided, reasonable defaults
 will be used.}
 
-\item{projection}{optional indication of projection, a character string that
-in the format used by the \code{rgdal} package (and in much of computer
+\item{projection}{optional indication of projection, in one of two
+forms. First, it may be a character string in the "CRS" format that is
+used by the \code{rgdal} package (and in much of modern computer-based
 cartography). For example, \code{projection="+proj=merc"} specifies a
-Mercator projection. See \dQuote{Details}.)}
+Mercator projection. The second format is the output from
+\code{\link[sp]{CRS}} in the \CRANpkg{sp} package, which is an object
+with a slot named \code{projarg} that gets used as a projection string.
+See \dQuote{Details}.}
 
 \item{tissot}{logical value indicating whether to use \code{\link{mapTissot}}
 to plot Tissot indicatrices, i.e. ellipses at grid intersection points, which
@@ -202,10 +227,11 @@ Int'l map of the world polyconic          \tab \code{imw_p}    \tab \code{lat_1}
 Kavraisky V                               \tab \code{kav5}     \tab - \cr
 Kavraisky VII                             \tab \code{kav7}     \tab - \cr
 Lambert azimuthal equal area              \tab \code{laea}     \tab - \cr
-Lat/long                                  \tab \code{lonlat}   \tab - \cr
-Lat/long                                  \tab \code{latlon}   \tab - \cr
+Longitude and latitude                    \tab \code{lonlat}   \tab - \cr
+Longitude and latitude                    \tab \code{longlat}   \tab - \cr
+Longitude and latitude                    \tab \code{latlon}   \tab - \cr
 Lambert conformal conic                   \tab \code{lcc}      \tab \code{lat_1}, \code{lat_2}, \code{lat_0}\cr
-Lambert conformal conic alternative       \tab \code{lcca}     \tab \code{lat_0}\cr
+Lambert conformal conic alt. [DEPRECATED] \tab \code{lcca}     \tab \code{lat_0}\cr
 Lambert equal area conic                  \tab \code{leac}     \tab \code{lat_1}, \code{south}\cr
 Loximuthal                                \tab \code{loxim}    \tab\cr
 Space oblique for Landsat                 \tab \code{lsat}     \tab \code{lsat}, \code{path}\cr
@@ -310,8 +336,7 @@ appropriate to most oceanographic applications.
 
 \section{Choosing a projection}{
 
-The use of the PROJ.4 scheme is greatly
-encouraged. The best choice of projection depends on the application.
+The best choice of projection depends on the application.
 Readers may find \code{projection="+proj=moll"} useful for world-wide
 plots, \code{ortho} for hemispheres viewed from the equator, \code{stere}
 for polar views, \code{lcc} for wide meridional ranges in mid latitudes,
@@ -333,6 +358,16 @@ meridians and (c) inaccurate filling of Antarctica in some projections.
 Generally, issues are tackled first for commonly used projections, such as
 those used in the examples.
 }
+
+\section{Changes}{
+
+\itemize{
+\item 2017-09-30: \code{lcca} deprecated, because its inverse was
+wildly inaccurate in a Pacific Antartic-Alaska application
+(see \url{https://github.com/dankelley/oce/issues/1303}).
+}
+}
+
 \examples{
 \dontrun{
 library(oce)
@@ -343,13 +378,13 @@ data(coastlineWorld)
 # for whole-globe views, below shown in a Pacific-focus view.
 # Note that filling is not employed when the prime meridian
 # is shifted, because this causes a problem with Antarctica
-par(mfrow=c(2,1), mar=c(3, 3, 1, 1))
+par(mfrow=c(2, 1), mar=c(3, 3, 1, 1))
 mapPlot(coastlineWorld, projection="+proj=moll", col='gray')
 mtext("Mollweide", adj=1)
 cl180 <- coastlineCut(coastlineWorld, lon_0=-180)
 mapPlot(cl180, projection="+proj=moll +lon_0=-180")
 mtext("Mollweide", adj=1)
-par(mfrow=c(1,1))
+par(mfrow=c(1, 1))
 
 # Example 2.
 # Orthographic projections resemble a globe, making them attractive for
@@ -366,7 +401,8 @@ mtext("Orthographic", adj=1)
 # recommended by [1], page 95, for regions of large east-west extent
 # away from the equator, here illustrated for the USA and Canada.
 par(mar=c(3, 3, 1, 1))
-mapPlot(coastlineWorld, longitudelim=c(-130,-55), latitudelim=c(35,60),
+mapPlot(coastlineCut(coastlineWorld, -100),
+        longitudelim=c(-130,-55), latitudelim=c(35, 60),
         projection="+proj=lcc +lat_0=30 +lat_1=60 +lon_0=-100", col='gray')
 mtext("Lambert conformal", adj=1)
 
@@ -377,32 +413,31 @@ mtext("Lambert conformal", adj=1)
 # second longitudelim is 180 plus the first; this uses image points "over"
 # the pole.
 par(mar=c(3, 3, 1, 1))
-mapPlot(coastlineWorld, longitudelim=c(-130,50), latitudelim=c(70,110),
+mapPlot(coastlineCut(coastlineWorld, -135),
+        longitudelim=c(-130, 50), latitudelim=c(70, 110),
         proj="+proj=stere +lat_0=90 +lon_0=-135", col='gray')
 mtext("Stereographic", adj=1)
 
 # Example 5.
 # Spinning globe: create PNG files that can be assembled into a movie
-png("539B-\\\%03d.png")
+png("globe-\%03d.png")
 lons <- seq(360, 0, -15)
-ilon <- seq_along(lons)
 par(mar=rep(0, 4))
-for (i in ilon) {
+for (i in seq_along(lons)) {
     p <- paste("+proj=ortho +lat_0=30 +lon_0=", lons[i], sep="")
     if (i == 1) {
-        mapPlot(coastlineWorld, projection=p, col="blue", lwd=1.4)
+        mapPlot(coastlineCut(coastlineWorld, lons[i]),
+                projection=p, col="lightgray")
         xlim <- par("usr")[1:2]
         ylim <- par("usr")[3:4]
     } else {
-        mapPlot(coastlineWorld, projection=p, col="blue", lwd=1.4,
+        mapPlot(coastlineCut(coastlineWorld, lons[i]),
+                projection=p, col="lightgray",
                 xlim=xlim, ylim=ylim, xaxs="i", yaxs="i")
     }
 }
 dev.off()
 }
-}
-\author{
-Dan Kelley and Clark Richards
 }
 \references{
 1. Snyder, John P., 1987.  Map Projections: A Working Manual.  USGS
@@ -415,13 +450,19 @@ Professional Paper: 1395 (available at
 3. Wikipedia page \url{http://en.wikipedia.org/wiki/List_of_map_projections}
 
 4. Radical Cartography website
-\url{http://www.radicalcartography.net/?projectionref}
+\code{http://www.radicalcartography.net/?projectionref} (This URL worked
+prior to Nov 16, 2016, but was found to fail on that date.)
 
 5. The \code{PROJ.4} website is \url{http://trac.osgeo.org/proj}, and it is
 the place to start to learn about the code.
 
-6. \code{PROJ.4} projection details are at
-\url{http://www.remotesensing.org/geotiff/proj_list/}.
+6. \code{PROJ.4} projection details were once at
+\code{http://www.remotesensing.org/geotiff/proj_list/} but it was 
+discovered on Dec 18, 2016, that this link no longer exists. Indeed, there
+seems to have been significant reorganization of websites related to this.
+The base website seems to be \url{https://trac.osgeo.org/geotiff/} and that
+lists only what is called an unofficial listing, on the wayback web-archiver server
+\url{http://web.archive.org/web/20160802172057/http://www.remotesensing.org/geotiff/proj_list/}
 
 7. A gallery of map plots is provided at
 \url{http://dankelley.github.io/r/2015/04/03/oce-proj.html}.
@@ -446,10 +487,12 @@ Other functions related to maps: \code{\link{lonlat2map}},
   \code{\link{mapImage}}, \code{\link{mapLines}},
   \code{\link{mapLocator}},
   \code{\link{mapLongitudeLatitudeXY}},
-  \code{\link{mapMeridians}}, \code{\link{mapPoints}},
-  \code{\link{mapPolygon}}, \code{\link{mapScalebar}},
-  \code{\link{mapText}}, \code{\link{mapTissot}},
-  \code{\link{mapZones}}, \code{\link{shiftLongitude}},
+  \code{\link{mapPoints}}, \code{\link{mapPolygon}},
+  \code{\link{mapScalebar}}, \code{\link{mapText}},
+  \code{\link{mapTissot}}, \code{\link{oceCRS}},
+  \code{\link{shiftLongitude}}, \code{\link{usrLonLat}},
   \code{\link{utm2lonlat}}
 }
-
+\author{
+Dan Kelley and Clark Richards
+}

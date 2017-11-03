@@ -9,7 +9,7 @@
   clongitude, clatitude, span, lonlabel = NULL, latlabel = NULL,
   sides = NULL, projection = NULL, expand = 1,
   mgp = getOption("oceMgp"), mar = c(mgp[1] + 1, mgp[1] + 1, 1, 1), bg,
-  fill, border = NULL, col = "lightgray", axes = TRUE,
+  fill, type = "polygon", border = NULL, col = NULL, axes = TRUE,
   cex.axis = par("cex.axis"), add = FALSE, inset = FALSE,
   geographical = 0, longitudelim, latitudelim,
   debug = getOption("oceDebug"), ...)
@@ -33,13 +33,16 @@ near the centre latitude on the plot. Often, it makes sense to set
 \code{asp=1/cos(45*pi/180)}.  Note that the land mass is not symmetric about
 the equator, so to get good world views you should set \code{asp=1} or set
 \code{ylim} to be symmetric about zero. Any given value of \code{asp} is
-ignored, if \code{clongitude} and \code{clatitude} are given.}
+ignored, if \code{clongitude} and \code{clatitude} are given (or
+if the latter two are inferred from \code{projection}.}
 
 \item{clongitude, clatitude}{optional center latitude of map, in decimal
-degrees.  If both \code{clongitude} and \code{clatitude} are provided, then
+degrees.  If both \code{clongitude} and \code{clatitude} are provided,
+or alternatively if they can be inferred from substrings \code{+lon_0}
+and \code{+lat_0} in \code{projection}, then
 any provided value of \code{asp} is ignored, and instead the plot aspect
 ratio is computed based on the center latitude.  If \code{clongitude} and
-\code{clatitude} are provided, then \code{span} must also be provided, and
+\code{clatitude} are known, then \code{span} must also be provided, and
 in this case, it is not permitted to also specify \code{longitudelim} and
 \code{latitudelim}.}
 
@@ -47,7 +50,8 @@ in this case, it is not permitted to also specify \code{longitudelim} and
 The plotted span is usually close to the suggestion, although the details
 depend on the plot aspect ratio and other factors, so some adjustment may be
 required to fine-tune a plot.  A value for \code{span} must be supplied, if
-\code{clongitude} and \code{clatitude} are supplied.}
+\code{clongitude} and \code{clatitude} are supplied
+(or inferred from \code{projection}).}
 
 \item{lonlabel, latlabel, sides}{optional vectors of longitude and latitude to
 label on the indicated sides of plot, passed to
@@ -56,7 +60,8 @@ simple customization.  If they are are not provided, reasonable defaults
 will be used.}
 
 \item{projection}{optional map projection to use (see
-\code{\link{mapPlot}}).  If set to \code{FALSE} then no projection is used,
+the \code{\link{mapPlot}} argument of the same name).
+If set to \code{FALSE} then no projection is used,
 and the data are plotted in a cartesion frame, with aspect ratio set to
 reduce distortion near the middle of the plot.  This option is useful if the
 coastline produces spurious horizontal lines owing to islands crossing the
@@ -84,12 +89,16 @@ comes in handy for drawing insets (see \dQuote{details}).}
 \item{fill}{a legacy parameter that will be permitted only temporarily; see
 \dQuote{History}.}
 
-\item{border}{colour of coastlines and international borders (passed to
-\code{\link{polygon}}, which does the drawing).}
+\item{type}{indication of type; may be \code{"polygon"}, for a filled polygon,
+\code{"p"} for points, \code{"l"} for line segments, or \code{"o"} for points
+overlain with line segments.}
 
-\item{col}{the colour with which to fill (passed to \code{\link{polygon}},
-which does the drawing.) This is ignored unless the coastline object is
-fillable.}
+\item{border}{colour of coastlines and international borders (ignored unless
+\code{type="polygon"}.}
+
+\item{col}{either the colour for filling polygons (if \code{type="polygon"})
+or the colour of the points and line segments (if \code{type="p"},
+\code{type="l"}, or \code{type="o"}).}
 
 \item{axes}{boolean, set to \code{TRUE} to plot axes.}
 
@@ -111,7 +120,10 @@ the unit, and negative signs indicating the southern and western
 hemispheres.  If \code{geographical=1}, the signs are dropped, with axis
 values being in decreasing order within the southern and western
 hemispheres.  If \code{geographical=2}, the signs are dropped and the axes
-are labelled with degrees, minutes and seconds, as appropriate.}
+are labelled with degrees, minutes and seconds, as appropriate, and
+hemispheres are indicated with letters. If \code{geographical=3}, things
+are the same as for \code{geographical=2}, but the hemisphere indication
+is omitted.}
 
 \item{longitudelim}{this and \code{latitudelim} provide a second way to
 suggest plot ranges. Note that these may not be supplied if
@@ -145,7 +157,7 @@ If \code{projection} is provided without \code{longitudelim} or \code{latitudeli
 then \code{\link{mapPlot}} is still called, but \code{longitudelim} and
 \code{latitudelim} are computed from \code{clongitude}, \code{clatitude} and \code{span}.
 
-If \code{projection} is not provided, much simpler plots are produced. These are 
+If \code{projection} is not provided, much simpler plots are produced. These are
 Cartesian, with aspect ratio set to minimize shape distortion at the central latitude.
 Although these are crude, they have the benefit of always working, which cannot
 be said of true map projections, which can be problematic in various ways owing
@@ -164,6 +176,7 @@ used now, instead. Also, in February, 2016, the arguments named
 become nonfunctional about a year previously, in the transition to using
 the \code{rgdal} package to carry out map projections.
 }
+
 \examples{
 \dontrun{
 library(oce)
@@ -177,9 +190,6 @@ plot(coastlineWorld, clongitude=-95, clatitude=65, span=5500,
      grid=10, projection='+proj=laea +lon_0=-100 +lat_0=55')
 }
 
-}
-\author{
-Dan Kelley
 }
 \seealso{
 The documentation for \code{\link{coastline-class}} explains the
@@ -215,9 +225,12 @@ Other things related to \code{coastline} data: \code{\link{[[,coastline-method}}
   \code{\link{coastline-class}},
   \code{\link{coastlineBest}}, \code{\link{coastlineCut}},
   \code{\link{coastlineWorld}},
+  \code{\link{download.coastline}},
   \code{\link{read.coastline.openstreetmap}},
   \code{\link{read.coastline.shapefile}},
   \code{\link{subset,coastline-method}},
   \code{\link{summary,coastline-method}}
 }
-
+\author{
+Dan Kelley
+}

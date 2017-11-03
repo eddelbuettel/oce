@@ -27,19 +27,19 @@ Coerces a sequence of longitudes and latitudes into a coastline dataset.
 This may be used when \code{\link{read.coastline}} cannot read a file, or
 when the data have been manipulated.
 }
-\author{
-Dan Kelley
-}
 \seealso{
 Other things related to \code{coastline} data: \code{\link{[[,coastline-method}},
   \code{\link{[[<-,coastline-method}},
   \code{\link{coastline-class}},
   \code{\link{coastlineBest}}, \code{\link{coastlineCut}},
   \code{\link{coastlineWorld}},
+  \code{\link{download.coastline}},
   \code{\link{plot,coastline-method}},
   \code{\link{read.coastline.openstreetmap}},
   \code{\link{read.coastline.shapefile}},
   \code{\link{subset,coastline-method}},
   \code{\link{summary,coastline-method}}
 }
-
+\author{
+Dan Kelley
+}

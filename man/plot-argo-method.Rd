@@ -14,9 +14,13 @@
 \arguments{
 \item{x}{object inheriting from \code{\link{argo-class}}.}
 
-\item{which}{list of desired plot types, one of the following.
+\item{which}{list of desired plot types, one of the following. Note
+that \code{\link{oce.pmatch}} is used to try to complete partial
+character matches, and that an error will occur if the match is
+not complete (e.g. \code{"salinity"} matches to both
+\code{"salinity ts"} and \code{"salinity profile"}.).
 \itemize{
-    \item \code{which=1} or \code{which="trajectory"} gives a 
+    \item \code{which=1} or \code{which="trajectory"} gives a
     plot of the argo trajectory, with the coastline, if one is provided.
 
     \item \code{which=2} or \code{"salinity ts"} gives a time series of
@@ -77,7 +81,7 @@ defunct \code{oce} features.)}
 
 \item{projection}{indication of the projection to be used
 in trajetory maps. If this is \code{NULL}, no projection is used, although
-the plot aspect ratio will be set to yield zero shape distortion at the 
+the plot aspect ratio will be set to yield zero shape distortion at the
 mean float latitude.  If \code{projection="automatic"}, then one
 of two projections is used: stereopolar (i.e. \code{"+proj=stere +lon_0=X"}
 where \code{X} is the mean longitude), or Mercator (i.e. \code{"+proj=merc"})
@@ -113,13 +117,19 @@ plot(argo, which="trajectory")
 
 
 }
-\author{
-Dan Kelley
-}
 \references{
 \url{http://www.argo.ucsd.edu/}
 }
 \seealso{
+Other things related to \code{argo} data: \code{\link{[[,argo-method}},
+  \code{\link{[[<-,argo-method}}, \code{\link{argo-class}},
+  \code{\link{argoGrid}}, \code{\link{argoNames2oceNames}},
+  \code{\link{argo}}, \code{\link{as.argo}},
+  \code{\link{handleFlags,argo-method}},
+  \code{\link{read.argo}},
+  \code{\link{subset,argo-method}},
+  \code{\link{summary,argo-method}}
+
 Other functions that plot \code{oce} data: \code{\link{plot,adp-method}},
   \code{\link{plot,adv-method}},
   \code{\link{plot,amsr-method}},
@@ -142,14 +152,7 @@ Other functions that plot \code{oce} data: \code{\link{plot,adp-method}},
   \code{\link{plot,windrose-method}},
   \code{\link{plotProfile}}, \code{\link{plotScan}},
   \code{\link{plotTS}}, \code{\link{tidem-class}}
-
-Other things related to \code{argo} data: \code{\link{[[,argo-method}},
-  \code{\link{[[<-,argo-method}}, \code{\link{argo-class}},
-  \code{\link{argoGrid}}, \code{\link{argo}},
-  \code{\link{as.argo}},
-  \code{\link{handleFlags,argo-method}},
-  \code{\link{read.argo}},
-  \code{\link{subset,argo-method}},
-  \code{\link{summary,argo-method}}
 }
-
+\author{
+Dan Kelley
+}

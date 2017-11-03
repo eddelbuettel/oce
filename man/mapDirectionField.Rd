@@ -41,14 +41,13 @@ vectors with lengths that match appropriately.
 \dontrun{
 library(oce)
 data(coastlineWorld)
-par(mar=rep(2,4))
-mapPlot(coastlineWorld, longitudelim=c(-120,-55), latitudelim=c(35,50),
-        proj="lambert", parameters=c(lat0=40,lat1=60),
-        orientation=c(90,-90,0))
+par(mar=rep(2, 4))
+mapPlot(coastlineWorld, longitudelim=c(-120,-55), latitudelim=c(35, 50),
+        proj="+proj=laea +lat0=40 +lat1=60" +lon_0=-110)
 lon <- seq(-120, -60, 15)
 lat <- 45 + seq(-15, 15, 5)
-lonm <- matrix(expand.grid(lon,lat)[,1], nrow=length(lon))
-latm <- matrix(expand.grid(lon,lat)[,2], nrow=length(lon))
+lonm <- matrix(expand.grid(lon, lat)[, 1], nrow=length(lon))
+latm <- matrix(expand.grid(lon, lat)[, 2], nrow=length(lon))
 ## vectors pointed 45 degrees clockwise from north
 u <- matrix(1/sqrt(2), nrow=length(lon), ncol=length(lat))
 v <- matrix(1/sqrt(2), nrow=length(lon), ncol=length(lat))
@@ -60,9 +59,6 @@ mapDirectionField(lonm, latm, 1, 0, scale=3, col=col, lwd=2)
 }
 
 }
-\author{
-Dan Kelley
-}
 \seealso{
 A map must first have been created with \code{\link{mapPlot}}.
 
@@ -73,10 +69,12 @@ Other functions related to maps: \code{\link{lonlat2map}},
   \code{\link{mapImage}}, \code{\link{mapLines}},
   \code{\link{mapLocator}},
   \code{\link{mapLongitudeLatitudeXY}},
-  \code{\link{mapMeridians}}, \code{\link{mapPlot}},
-  \code{\link{mapPoints}}, \code{\link{mapPolygon}},
-  \code{\link{mapScalebar}}, \code{\link{mapText}},
-  \code{\link{mapTissot}}, \code{\link{mapZones}},
-  \code{\link{shiftLongitude}}, \code{\link{utm2lonlat}}
+  \code{\link{mapPlot}}, \code{\link{mapPoints}},
+  \code{\link{mapPolygon}}, \code{\link{mapScalebar}},
+  \code{\link{mapText}}, \code{\link{mapTissot}},
+  \code{\link{oceCRS}}, \code{\link{shiftLongitude}},
+  \code{\link{usrLonLat}}, \code{\link{utm2lonlat}}
 }
-
+\author{
+Dan Kelley
+}

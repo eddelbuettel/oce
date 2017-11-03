@@ -28,6 +28,7 @@
 #' all the data in the \code{object}'s \code{data} slot are examined.
 #' Each element in the list must be set to an integer or vector of integers,
 #' specifying conditions to be met before actions are to be taken.
+#' See \dQuote{Details} for the default that is used if \code{flags} is not supplied.
 #'
 #' @param actions An optional \code{\link{list}} that contains items with
 #' names that match those in the \code{flags} argument.  If \code{actions}
@@ -37,17 +38,20 @@
 #' functions that calculate replacement values. These are provided
 #' with \code{object} as the single argument, and must return a
 #' replacement for the data item in question.
+#' See \dQuote{Details} for the default that is used if \code{actions} is not supplied.
 #'
-#' @section Implementation status: \code{handleFlags} is a new function as of March 2016,
-#' and it will probably change through the Spring of 2016.
-#' Almost nothing works yet, and users should not be doing
-#' any more than looking at the documentation and telling the developers
-#' whether the planned functioning seems reasonable.
-#' The hope is to get trial code working for \code{ctd}
-#' and \code{argo} data types by the end of April. After that, there
-#' will likely  be a month or more of testing with real-world
-#' work, with possible changes to the user interface. Then other
-#' types will be added, as needed.
+#' @param debug An optional integer specifying the degree of debugging, with
+#' value 0 meaning to skip debugging and 1 or higher meaning to print some
+#' information about the arguments and the data. It is usually a good idea to set
+#' this to 1 for initial work with a dataset, to see which flags are being
+#' handled for each data item. If not supplied, this defaults to the value of
+#' \code{\link{getOption}("oceDebug")}.
+#'
+## @section Implementation status: \code{handleFlags} is a new function as of March 2016,
+## and it will probably continue to evolve through the rest of 2016.
+## Users are asked to be patient, and to provide help by
+## looking at the documentation and telling the developers
+## whether the planned functioning seems reasonable.
 #'
 #' @family functions that handle data-quality flags
 

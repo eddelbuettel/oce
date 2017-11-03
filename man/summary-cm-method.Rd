@@ -16,16 +16,16 @@
 Summarizes some of the data in a \code{cm} object, presenting such information
 as the station name, sampling location, data ranges, etc.
 }
-\author{
-Dan Kelley
-}
 \seealso{
 The documentation for \code{\link{cm-class}} explains the structure
 of \code{cm} objects, and also outlines the other functions dealing with them.
 
 Other things related to \code{cm} data: \code{\link{[[,cm-method}},
-  \code{\link{[[<-,cm-method}}, \code{\link{cm-class}},
-  \code{\link{cm}}, \code{\link{plot,cm-method}},
-  \code{\link{read.cm}}, \code{\link{subset,cm-method}}
+  \code{\link{[[<-,cm-method}}, \code{\link{as.cm}},
+  \code{\link{cm-class}}, \code{\link{cm}},
+  \code{\link{plot,cm-method}}, \code{\link{read.cm}},
+  \code{\link{subset,cm-method}}
 }
-
+\author{
+Dan Kelley
+}

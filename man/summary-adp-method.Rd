@@ -2,9 +2,9 @@
 % Please edit documentation in R/adp.R
 \docType{methods}
 \name{summary,adp-method}
-\alias{summary,adp,missing-method}
 \alias{summary,adp-method}
 \alias{summary.adp}
+\alias{summary,adp,missing-method}
 \title{Summarize an ADP Object}
 \usage{
 \S4method{summary}{adp}(object, ...)
@@ -26,19 +26,16 @@ Summarize data in an \code{adp} object.
 \details{
 Pertinent summary information is presented.
 }
-\author{
-Dan Kelley
-}
 \seealso{
 Other things related to \code{adp} data: \code{\link{[[,adp-method}},
   \code{\link{[[<-,adp-method}}, \code{\link{adp-class}},
-  \code{\link{adp}}, \code{\link{as.adp}},
-  \code{\link{beamName}}, \code{\link{beamToXyzAdp}},
-  \code{\link{beamToXyzAdv}}, \code{\link{beamToXyz}},
-  \code{\link{beamUnspreadAdp}}, \code{\link{binmapAdp}},
-  \code{\link{enuToOtherAdp}}, \code{\link{enuToOther}},
-  \code{\link{plot,adp-method}},
-  \code{\link{read.adp.nortek}},
+  \code{\link{adpEnsembleAverage}}, \code{\link{adp}},
+  \code{\link{as.adp}}, \code{\link{beamName}},
+  \code{\link{beamToXyzAdp}}, \code{\link{beamToXyzAdv}},
+  \code{\link{beamToXyz}}, \code{\link{beamUnspreadAdp}},
+  \code{\link{binmapAdp}}, \code{\link{enuToOtherAdp}},
+  \code{\link{enuToOther}}, \code{\link{plot,adp-method}},
+  \code{\link{read.ad2cp}}, \code{\link{read.adp.nortek}},
   \code{\link{read.adp.rdi}},
   \code{\link{read.adp.sontek.serial}},
   \code{\link{read.adp.sontek}}, \code{\link{read.adp}},
@@ -49,4 +46,6 @@ Other things related to \code{adp} data: \code{\link{[[,adp-method}},
   \code{\link{toEnu}}, \code{\link{velocityStatistics}},
   \code{\link{xyzToEnuAdp}}, \code{\link{xyzToEnu}}
 }
-
+\author{
+Dan Kelley
+}

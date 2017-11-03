@@ -4,14 +4,13 @@
 \alias{swSCTp}
 \title{Salinity from electrical conductivity, temperature and pressure}
 \usage{
-swSCTp(conductivity, temperature = NULL, pressure = 0,
-  conductivityUnit = c("", "mS/cm", "S/m"), eos = getOption("oceEOS",
-  default = "gsw"))
+swSCTp(conductivity, temperature = NULL, pressure = NULL, conductivityUnit,
+  eos = getOption("oceEOS", default = "gsw"))
 }
 \arguments{
-\item{conductivity}{conductivity ratio, or a CTD object. If a CTD object,
-then the next 3 arguments are ignored, since the information can be gleaned
-from the object.}
+\item{conductivity}{a measure of conductivity (see also \code{conductivityUnit})
+or an \code{oce} object holding hydrographic information. In the second case,
+all the other arguments to \code{swSCTp} are ignored.}
 
 \item{temperature}{\emph{in-situ} temperature [\eqn{^\circ}{deg}C], defined
 on the ITS-90 scale; see \dQuote{Temperature units} in the documentation for
@@ -19,9 +18,11 @@ on the ITS-90 scale; see \dQuote{Temperature units} in the documentation for
 
 \item{pressure}{pressure [dbar]}
 
-\item{conductivityUnit}{string indicating the unit used for conductivity;
-\code{ratio} means actual conductivity divided by standard conductivity
-(4.2914 S/m).}
+\item{conductivityUnit}{string indicating the unit used for conductivity.
+This may be \code{"ratio"} or \code{""} (meaning conductivity ratio),
+\code{"mS/cm"} or \code{"S/m"}.  Note that the ratio mode assumes that
+measured conductivity has been divided by the standard conductivity
+of 4.2914 S/m.}
 
 \item{eos}{equation of state, either \code{"unesco"} or \code{"gsw"}.}
 }
@@ -44,11 +45,8 @@ the UNESCO algorithm described by Fofonoff and Millard (1983); if it is
 }
 \examples{
 swSCTp(1, T90fromT68(15), 0, eos="unesco") # 35
-swSCTp( 1,            15, 0, eos="gsw") # 35
+swSCTp(1, T90fromT68(15), 0, eos="gsw")    # 35
 
-}
-\author{
-Dan Kelley
 }
 \references{
 Fofonoff, P. and R. C. Millard Jr, 1983. Algorithms for
@@ -82,4 +80,6 @@ Other functions that calculate seawater properties: \code{\link{T68fromT90}},
   \code{\link{swTheta}}, \code{\link{swViscosity}},
   \code{\link{swZ}}
 }
-
+\author{
+Dan Kelley
+}

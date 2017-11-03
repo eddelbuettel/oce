@@ -9,14 +9,14 @@
   colCoastline = "lightgray", eos = getOption("oceEOS", default = "gsw"),
   ref.lat = NaN, ref.lon = NaN, grid = TRUE, coastline = "best", Slim,
   Clim, Tlim, plim, densitylim, N2lim, Rrholim, dpdtlim, timelim, lonlim,
-  latlim, clongitude, clatitude, span, showHemi = TRUE, lonlabel = NULL,
-  latlabel = NULL, sides = NULL, projection = NULL, parameters = NULL,
-  orientation = NULL, latlon.pch = 20, latlon.cex = 1.5,
-  latlon.col = "red", cex = 1, cex.axis = par("cex.axis"), pch = 1,
-  useSmoothScatter = FALSE, df, keepNA = FALSE, type = "l",
-  adorn = NULL, mgp = getOption("oceMgp"), mar = c(mgp[1] + 1.5, mgp[1] +
-  1.5, mgp[1] + 1.5, mgp[1] + 1), inset = FALSE, add = FALSE,
-  debug = getOption("oceDebug"), ...)
+  latlim, drawIsobaths = FALSE, clongitude, clatitude, span,
+  showHemi = TRUE, lonlabel = NULL, latlabel = NULL, sides = NULL,
+  projection = NULL, parameters = NULL, orientation = NULL,
+  latlon.pch = 20, latlon.cex = 1.5, latlon.col = "red", cex = 1,
+  cex.axis = par("cex.axis"), pch = 1, useSmoothScatter = FALSE, df,
+  keepNA = FALSE, type = "l", adorn = NULL, mgp = getOption("oceMgp"),
+  mar = c(mgp[1] + 1.5, mgp[1] + 1.5, mgp[1] + 1.5, mgp[1] + 1),
+  inset = FALSE, add = FALSE, debug = getOption("oceDebug"), ...)
 }
 \arguments{
 \item{x}{A \code{ctd} object, i.e. one inheriting from \code{\link{ctd-class}}.}
@@ -26,8 +26,9 @@ supplied, a default will be used. This default will be \code{c(1,2,3,5)} if the
 CTD is in profiling mode (i.e. if \code{deploymentType} in the \code{metadata}
 slot equals \code{"profile"},
 or is missing) or
-\code{"thermosalinograph"}, the default will be \code{c(30, 3, 31, 5)}.  If it
-is \code{"towyo"}, \code{c(30, 31, 32, 3)} will be used. Details are as follows.
+\code{"moored"}/\code{"thermosalinograph"}, the default will be \code{c(30, 3, 31, 5)}.  If it
+is \code{"towyo"}, \code{c(30, 31, 32, 3)} will be used. Details are as
+follows.
 
 \itemize{
     \item \code{which=1} or \code{which="salinity+temperature"} gives
@@ -63,6 +64,12 @@ is \code{"towyo"}, \code{c(30, 31, 32, 3)} will be used. Details are as follows.
     \item \code{which=15} or \code{which="Rrho"} gives an Rrho profile
     \item \code{which=16} or \code{which="RrhoSF"} gives an RrhoSF profile
     \item \code{which=17} or \code{which="conductivity"} gives a conductivity profile
+    \item \code{which=20} or \code{which="CT"} gives a Conservative Temperature profile
+    \item \code{which=21} or \code{which="SA"} gives an Absolute Salinity profile
+    \item \code{which=30} gives a time series of Salinity
+    \item \code{which=31} gives a time series of Temperature
+    \item \code{which=32} gives a time series of pressure
+    \item \code{which=33} gives a time series of sigmaTheta
 }}
 
 \item{col}{Colour of lines or symbols.}
@@ -91,7 +98,7 @@ to \code{\link{plot,coastline-method}} if a map is included in \code{which}. Set
 supplied by the user, or a character string.  If the later, it may be the
 name of a built-in coastline (\code{"coastlineWorld"},
 \code{"coastlineWorldFine"}, or
-\code{"coastlineWorldCoarse"}), or \code{"best"}, to choose 
+\code{"coastlineWorldCoarse"}), or \code{"best"}, to choose
 a suitable coastline for the locale, or \code{"none"} to prevent
 the drawing of a coastline.  There is a speed penalty for providing
 \code{coastline} as a character string, because it forces
@@ -124,6 +131,21 @@ plotted) DEPRECATED 2014-01-07.}
 \item{latlim}{Optional limits of latitude axis of map (ignored if no map
 plotted) DEPRECATED 2014-01-07.}
 
+\item{drawIsobaths}{An indication of whether to draw depth contours on
+maps, in addition to the coastline. The argument has no effect except
+for panels in which the value of \code{which} equals \code{"map"} or
+the equivalent numerical code, \code{5}. If \code{drawIsobaths} is
+\code{FALSE}, then no contours are drawn. If \code{drawIsobaths}
+is \code{TRUE}, then contours are selected automatically,
+using \code{\link{pretty}(c(0,300))} if the station depth is
+under 100m or \code{\link{pretty}(c(0,5500))} otherwise.
+If \code{drawIsobaths} is a numerical vector,
+then the indicated depths are drawn. For plots drawn with \code{projection}
+set to \code{NULL}, the contours are added with \code{\link{contour}}
+and otherwise \code{\link{mapContour}} is used. To customize
+the resultant contours, e.g. setting particular line types or colours,
+users should call these functions directly (see e.g. Example 2).}
+
 \item{clongitude}{Center longitude.}
 
 \item{clatitude}{Center latitude.}
@@ -148,9 +170,11 @@ used, depending on whether the CTD station is within 70 degrees of the equator
 or at higher latitudes.  Finally, if this is a string in the format used by
 \code{\link{mapPlot}}, then it is is passed to that function.}
 
-\item{parameters}{Parameters for map, as for \code{projection}.}
+\item{parameters}{a \strong{deprecated} argument that has been ignored
+since February 2016; see \link{oce-deprecated}.}
 
-\item{orientation}{Orientation for map, as for \code{projection}.}
+\item{orientation}{a \strong{deprecated} argument that has been ignored
+since February 2016; see \link{oce-deprecated}.}
 
 \item{latlon.pch}{Symbol code for sample location (ignored if no map plotted).}
 
@@ -214,11 +238,13 @@ necessary because margin adjustment is the basis for the method used by
 only works if \code{length(which)=1}, and it will yield odd results if the
 value of \code{which} does not match that in the previous plots.}
 
-\item{debug}{An integer specifying whether debugging information is
+\item{debug}{an integer specifying whether debugging information is
 to be printed during the processing. This is a general parameter that
 is used by many \code{oce} functions. Generally, setting \code{debug=0}
 turns off the printing, while higher values suggest that more information
-be printed.}
+be printed. If one function calls another, it usually reduces the value of
+\code{debug} first, so that a user can often obtain deeper debugging
+by specifying higher \code{debug} values.}
 
 \item{...}{Optional arguments passed to plotting functions. A common example is
 to set \code{df}, for use in \link{swN2} calculations.}
@@ -232,7 +258,7 @@ location.
 \details{
 Creates a multi-panel summary plot of data measured in a CTD cast. The
 default values of \code{which} and other arguments are chosen to be useful
-for quick overviews of data. However, for detailed work it is common 
+for quick overviews of data. However, for detailed work it is common
 to call the present function with just a single value of \code{which}, e.g.
 with four calls to get four panels. The advantage of this is that it provides
 much more control over the display, and also it permits the addition of extra
@@ -241,7 +267,7 @@ display elements (lines, points, margin notes, etc.) to the individual panels.
 Note that panels that draw more than one curve (e.g. \code{which="salinity+temperature"}
 draws temperature and salinity profiles in one graph), the value of \code{\link{par}("usr")}
 is established by the second profile to have been drawn. Some experimentation will
-reveal what this profile is, for each permitted \code{which} case, although 
+reveal what this profile is, for each permitted \code{which} case, although
 it seems unlikely that this will help much ... the simple fact is that drawing two
 profiles in one graph is useful for a quick overview, but not useful for e.g. interactive
 analysis with \code{\link{locator}} to flag bad data, etc.
@@ -250,17 +276,31 @@ analysis with \code{\link{locator}} to flag bad data, etc.
 
 Until February, 2016, \code{plot,ctd-method} relied on a now-defunct argument
 \code{fill} to control colours; \code{colCoastline} is to be used now, instead.
-Also, now it is possible to set the edge of coasts and international
+Also, now it is possible to set the colour of coasts and international
 boundaries, with \code{borderCoastline}.
 }
+
 \examples{
+## 1. simple plot
 library(oce)
-data(ctd) 
+data(ctd)
 plot(ctd)
 
-}
-\author{
-Dan Kelley
+## 2. how to customize depth contours
+par(mfrow=c(1,2))
+data(section)
+stn <- section[["station", 105]]
+plot(stn, which='map', drawIsobaths=TRUE)
+plot(stn, which='map')
+data(topoWorld)
+tlon <- topoWorld[["longitude"]]
+tlat <- topoWorld[["latitude"]]
+tdep <- -topoWorld[["z"]]
+contour(tlon, tlat, tdep, drawlabels=FALSE,
+        levels=seq(1000,6000,1000), col='lightblue', add=TRUE)
+contour(tlon, tlat, tdep, vfont=c("sans serif", "bold"),
+        levels=stn[['waterDepth']], col='red', lwd=2, add=TRUE)
+
 }
 \seealso{
 The documentation for \code{\link{ctd-class}} explains the structure of CTD
@@ -292,11 +332,11 @@ Other functions that plot \code{oce} data: \code{\link{plot,adp-method}},
 Other things related to \code{ctd} data: \code{\link{[[,ctd-method}},
   \code{\link{[[<-,ctd-method}}, \code{\link{as.ctd}},
   \code{\link{cnvName2oceName}}, \code{\link{ctd-class}},
-  \code{\link{ctdAddColumn}}, \code{\link{ctdDecimate}},
-  \code{\link{ctdFindProfiles}}, \code{\link{ctdRaw}},
-  \code{\link{ctdTrim}}, \code{\link{ctdUpdateHeader}},
-  \code{\link{ctd}}, \code{\link{gps-class}},
-  \code{\link{handleFlags,ctd-method}},
+  \code{\link{ctdDecimate}}, \code{\link{ctdFindProfiles}},
+  \code{\link{ctdRaw}}, \code{\link{ctdTrim}},
+  \code{\link{ctd}}, \code{\link{handleFlags,ctd-method}},
+  \code{\link{oceNames2whpNames}},
+  \code{\link{oceUnits2whpUnits}},
   \code{\link{plotProfile}}, \code{\link{plotScan}},
   \code{\link{plotTS}}, \code{\link{read.ctd.itp}},
   \code{\link{read.ctd.odf}}, \code{\link{read.ctd.sbe}},
@@ -304,6 +344,9 @@ Other things related to \code{ctd} data: \code{\link{[[,ctd-method}},
   \code{\link{read.ctd.woce}}, \code{\link{read.ctd}},
   \code{\link{subset,ctd-method}},
   \code{\link{summary,ctd-method}},
-  \code{\link{woceNames2oceNames}}, \code{\link{write.ctd}}
+  \code{\link{woceNames2oceNames}},
+  \code{\link{woceUnit2oceUnit}}, \code{\link{write.ctd}}
 }
-
+\author{
+Dan Kelley
+}

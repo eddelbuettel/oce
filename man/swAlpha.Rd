@@ -4,8 +4,8 @@
 \alias{swAlpha}
 \title{Seawater thermal expansion coefficient}
 \usage{
-swAlpha(salinity, temperature = NULL, pressure = 0, longitude = 300,
-  latitude = 30, eos = getOption("oceEOS", default = "gsw"))
+swAlpha(salinity, temperature = NULL, pressure = 0, longitude = NULL,
+  latitude = NULL, eos = getOption("oceEOS", default = "gsw"))
 }
 \arguments{
 \item{salinity}{either practical salinity (in which case \code{temperature}
@@ -31,9 +31,6 @@ Value in 1/degC.
 }
 \description{
 Compute \eqn{\alpha}{alpha}, the thermal expansion coefficient for seawater.
-}
-\author{
-Dan Kelley
 }
 \references{
 The \code{eos="unesco"} formulae are based on the UNESCO
@@ -65,4 +62,6 @@ Other functions that calculate seawater properties: \code{\link{T68fromT90}},
   \code{\link{swTheta}}, \code{\link{swViscosity}},
   \code{\link{swZ}}
 }
-
+\author{
+Dan Kelley
+}

@@ -3,14 +3,28 @@
 \docType{data}
 \name{argo}
 \alias{argo}
-\title{ARGO drifter dataset}
+\title{ARGO float dataset}
 \source{
-This is the profile stored in the file \code{6900388_prof.nc}
-downloaded from the \code{usgodae.org} website in March 2012.
+This file was downloaded using the unix command
+\preformatted{
+ftp ftp://ftp.ifremer.fr/ifremer/argo/dac/bodc/6900388/6900388_prof.nc
+} issued on 2017 July 7.
 }
 \description{
-This is an ARGO drifter data object, for drifter 6900388, downloaded as
-\code{6900388_prof.nc} from \code{usgodae.org} in March 2012.
+This holds data from ARGO 6900388 in the North Atlantic.
+}
+\details{
+To quote Argo's website: "These data were collected and made freely
+available by the International Argo Program and the national programs
+that contribute to it.  (http://www.argo.ucsd.edu,
+http://argo.jcommops.org).  The Argo Program is part of the
+Global Ocean Observing System."
+
+Below is the official citation (note that this DOI has web links for
+downloads):
+Argo (2017). Argo float data and metadata from Global Data Assembly Centre
+(Argo GDAC) - Snapshot of Argo GDAC of July, 8st 2017. SEANOE.
+\url{http://doi.org/10.17882/42182#50865}
 }
 \examples{
 \dontrun{
@@ -36,10 +50,10 @@ Other datasets provided with \code{oce}: \code{\link{adp}},
 
 Other things related to \code{argo} data: \code{\link{[[,argo-method}},
   \code{\link{[[<-,argo-method}}, \code{\link{argo-class}},
-  \code{\link{argoGrid}}, \code{\link{as.argo}},
+  \code{\link{argoGrid}}, \code{\link{argoNames2oceNames}},
+  \code{\link{as.argo}},
   \code{\link{handleFlags,argo-method}},
   \code{\link{plot,argo-method}}, \code{\link{read.argo}},
   \code{\link{subset,argo-method}},
   \code{\link{summary,argo-method}}
 }
-

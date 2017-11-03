@@ -4,8 +4,8 @@
 \alias{swSigmaT}
 \title{Seawater quasi-potential density anomaly}
 \usage{
-swSigmaT(salinity, temperature = NULL, pressure = NULL, longitude = 300,
-  latitude = 30, eos = getOption("oceEOS", default = "gsw"))
+swSigmaT(salinity, temperature = NULL, pressure = NULL, longitude = NULL,
+  latitude = NULL, eos = getOption("oceEOS", default = "gsw"))
 }
 \arguments{
 \item{salinity}{either practical salinity (in which case \code{temperature}
@@ -45,12 +45,9 @@ If the first argument is an \code{oce} object, then salinity, etc., are
 extracted from it, and used for the calculation.
 }
 \examples{
-swSigmaT(35, 13, 1000, eos="gsw")                # 26.396816
-swSigmaT(35, T90fromT68(13), 1000, eos="unesco") # 26.393538
+swSigmaT(35, 13, 1000, longitude=300, latitude=30, eos="gsw") # 26.39623
+swSigmaT(35, T90fromT68(13), 1000, eos="unesco") # 26.39354
 
-}
-\author{
-Dan Kelley
 }
 \references{
 See citations provided in the \code{\link{swRho}} documentation.
@@ -78,4 +75,6 @@ Other functions that calculate seawater properties: \code{\link{T68fromT90}},
   \code{\link{swTheta}}, \code{\link{swViscosity}},
   \code{\link{swZ}}
 }
-
+\author{
+Dan Kelley
+}

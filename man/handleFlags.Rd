@@ -4,7 +4,7 @@
 \alias{handleFlags}
 \title{Handle flags in oce objects}
 \usage{
-handleFlags(object, flags, actions)
+handleFlags(object, flags, actions, debug)
 }
 \arguments{
 \item{object}{An object of \code{\link{oce}}.}
@@ -15,7 +15,8 @@ or (b) a single unnamed item. In the first case, the attention is
 focussed on the named items, while in the second case the 
 all the data in the \code{object}'s \code{data} slot are examined.
 Each element in the list must be set to an integer or vector of integers,
-specifying conditions to be met before actions are to be taken.}
+specifying conditions to be met before actions are to be taken.
+See \dQuote{Details} for the default that is used if \code{flags} is not supplied.}
 
 \item{actions}{An optional \code{\link{list}} that contains items with
 names that match those in the \code{flags} argument.  If \code{actions}
@@ -24,7 +25,15 @@ is not supplied, the default will be to set all values identified by
 specifying \code{actions=list("NA")}. It is also possible to specify 
 functions that calculate replacement values. These are provided
 with \code{object} as the single argument, and must return a
-replacement for the data item in question.}
+replacement for the data item in question.
+See \dQuote{Details} for the default that is used if \code{actions} is not supplied.}
+
+\item{debug}{An optional integer specifying the degree of debugging, with
+value 0 meaning to skip debugging and 1 or higher meaning to print some
+information about the arguments and the data. It is usually a good idea to set
+this to 1 for initial work with a dataset, to see which flags are being
+handled for each data item. If not supplied, this defaults to the value of
+\code{\link{getOption}("oceDebug")}.}
 }
 \description{
 Data-quality flags are stored in the \code{metadata}
@@ -54,21 +63,8 @@ to the data and the analysis goals.
 Each specialized variant of this function has its own defaults
 for \code{flags} and \code{actions}.
 }
-\section{Implementation status}{
- \code{handleFlags} is a new function as of March 2016,
-and it will probably change through the Spring of 2016.
-Almost nothing works yet, and users should not be doing
-any more than looking at the documentation and telling the developers
-whether the planned functioning seems reasonable.
-The hope is to get trial code working for \code{ctd}
-and \code{argo} data types by the end of April. After that, there
-will likely  be a month or more of testing with real-world
-work, with possible changes to the user interface. Then other
-types will be added, as needed.
-}
 \seealso{
 Other functions that handle data-quality flags: \code{\link{handleFlags,argo-method}},
   \code{\link{handleFlags,ctd-method}},
   \code{\link{handleFlags,section-method}}
 }
-

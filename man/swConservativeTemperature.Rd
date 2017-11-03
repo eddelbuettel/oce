@@ -5,7 +5,7 @@
 \title{Seawater conservative temperature, in GSW formulation}
 \usage{
 swConservativeTemperature(salinity, temperature = NULL, pressure = NULL,
-  longitude = 300, latitude = 30)
+  longitude = NULL, latitude = NULL)
 }
 \arguments{
 \item{salinity}{either practical salinity (in which case \code{temperature}
@@ -26,7 +26,7 @@ on the ITS-90 scale; see \dQuote{Temperature units} in the documentation for
 Conservative temperature in degrees Celcius.
 }
 \description{
-Compute seawater conservative temperature, according to the GSW/TEOS-10
+Compute seawater Conservative Temperature, according to the GSW/TEOS-10
 formulation.
 }
 \details{
@@ -40,9 +40,6 @@ The conservative temperature is calculated using the TEOS-10 function
 \examples{
 swConservativeTemperature(35,10,1000,188,4) # 9.86883
 
-}
-\author{
-Dan Kelley
 }
 \references{
 McDougall, T.J. and P.M. Barker, 2011: Getting started with
@@ -76,4 +73,6 @@ Other functions that calculate seawater properties: \code{\link{T68fromT90}},
   \code{\link{swTheta}}, \code{\link{swViscosity}},
   \code{\link{swZ}}
 }
-
+\author{
+Dan Kelley
+}

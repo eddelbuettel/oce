@@ -33,13 +33,10 @@ additions to the existing plot.
 \dontrun{
 library(oce)
 ## Cape Split, in the Minas Basin of the Bay of Fundy
-cs <- list(longitude=-64.49657,latitude=45.33462)
+cs <- list(longitude=-64.49657, latitude=45.33462)
 xy <- lonlat2map(cs, projection="+proj=merc")
 map2lonlat(xy)
 }
-}
-\author{
-Dan Kelley
 }
 \seealso{
 \code{mapLongitudeLatitudeXY} is a safer alternative, if a map has
@@ -54,10 +51,12 @@ Other functions related to maps: \code{\link{lonlat2utm}},
   \code{\link{mapImage}}, \code{\link{mapLines}},
   \code{\link{mapLocator}},
   \code{\link{mapLongitudeLatitudeXY}},
-  \code{\link{mapMeridians}}, \code{\link{mapPlot}},
-  \code{\link{mapPoints}}, \code{\link{mapPolygon}},
-  \code{\link{mapScalebar}}, \code{\link{mapText}},
-  \code{\link{mapTissot}}, \code{\link{mapZones}},
-  \code{\link{shiftLongitude}}, \code{\link{utm2lonlat}}
+  \code{\link{mapPlot}}, \code{\link{mapPoints}},
+  \code{\link{mapPolygon}}, \code{\link{mapScalebar}},
+  \code{\link{mapText}}, \code{\link{mapTissot}},
+  \code{\link{oceCRS}}, \code{\link{shiftLongitude}},
+  \code{\link{usrLonLat}}, \code{\link{utm2lonlat}}
 }
-
+\author{
+Dan Kelley
+}

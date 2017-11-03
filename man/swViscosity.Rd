@@ -4,7 +4,7 @@
 \alias{swViscosity}
 \title{Seawater viscosity}
 \usage{
-swViscosity(salinity, temperature = NULL)
+swViscosity(salinity, temperature)
 }
 \arguments{
 \item{salinity}{either salinity [PSU] (in which case \code{temperature} and
@@ -39,9 +39,6 @@ No pressure dependence was reported by Dorsey (1940).
 swViscosity(30, 10) # 0.001383779
 
 }
-\author{
-Dan Kelley
-}
 \references{
 N. Ernest Dorsey (1940), \emph{Properties of ordinary
 Water-substance}, American Chemical Society Monograph Series.  Reinhold
@@ -69,4 +66,6 @@ Other functions that calculate seawater properties: \code{\link{T68fromT90}},
   \code{\link{swThermalConductivity}},
   \code{\link{swTheta}}, \code{\link{swZ}}
 }
-
+\author{
+Dan Kelley
+}

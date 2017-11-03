@@ -6,7 +6,7 @@
 coefficient}
 \usage{
 swAlphaOverBeta(salinity, temperature = NULL, pressure = NULL,
-  longitude = 300, latitude = 30, eos = getOption("oceEOS", default =
+  longitude = NULL, latitude = NULL, eos = getOption("oceEOS", default =
   "gsw"))
 }
 \arguments{
@@ -35,9 +35,6 @@ Compute \eqn{\alpha/\beta}{alpha/beta} using McDougall's (1987) algorithm.
 \examples{
 swAlphaOverBeta(40, 10, 4000, eos="unesco") # 0.3476
 
-}
-\author{
-Dan Kelley
 }
 \references{
 The \code{eos="unesco"} formulae are based on the UNESCO
@@ -68,4 +65,6 @@ Other functions that calculate seawater properties: \code{\link{T68fromT90}},
   \code{\link{swTheta}}, \code{\link{swViscosity}},
   \code{\link{swZ}}
 }
-
+\author{
+Dan Kelley
+}

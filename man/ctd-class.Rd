@@ -16,7 +16,7 @@ with other data being optional. Formulae are available for converting
 between variants of these data triplets, e.g. \code{\link{swSCTp}}
 can calculate \code{salinity} given \code{conductivity}, \code{temperature}
 and \code{pressure}, and these are used by the main functions that
-create \code{ctd} objects. For example, if \code{\link{read.ctd.sbe}} 
+create \code{ctd} objects. For example, if \code{\link{read.ctd.sbe}}
 is used to read a Seabird file that contains only conductivity, temperature
 and pressure, then that function will automatically append a data
 item to hold salinity.  \code{\link{as.ctd}} acts similarly. The result
@@ -25,10 +25,10 @@ this is that all \code{ctd} objects hold \code{salinity},
 the three basic quantities.
 }
 \details{
-Different units and scales are permitted for the three basic quantities, and 
+Different units and scales are permitted for the three basic quantities, and
 most \code{oce} functions check those units and scales before
 doing calculations (e.g. of seawater density), because those calculations
-demand certain units and scales. The way this is handled is that the 
+demand certain units and scales. The way this is handled is that the
 accessor function \code{\link{[[,ctd-method}} returns values in standardized
 form. For example, a \code{ctd} object might hold temperature defined on the
 IPTS-68 scale, but e.g. \code{ctd[["temperature"]]} returns a value on the ITS-90
@@ -67,9 +67,11 @@ retrieved with \code{ctd[["S"]]} or \code{ctd[["salinity"]]}.
 Conservative Temperature defined according to TEOS-2010 is calculated with
 \code{ctd[["CT"]]} or \code{ctd[["conservative temperature"]]}.  Absolute
 salinity is calculated with \code{ctd[["SA"]]} or \code{ctd[["absolute
-salinity"]]}. Note that the salinity calculation requires a latitude and
-longitude, and if the \code{ctd} object lacks those data, the values 300E and
-30N will be used as a default.
+salinity"]]}. Note that the \code{CT}, \code{SA} and \code{Sstar} calculations
+require latitude and longitude, and so errors result if these items
+are sought for a \code{ctd} object that lacks latitude or longitude.
+(Until 2017 May 14, defaults of 300E and 30N were used if position
+was not stored in the object.)
 
 The square of buoyancy frequency is retrieved with \code{ctd[["N2"]]} or
 \code{\link{swN2}}, density ratio with \code{ctd[["Rrho"]]} and spiciness with
@@ -104,15 +106,32 @@ Towyow data can be split up into sets of profiles (ascending or descending)
 with \code{\link{ctdFindProfiles}}.  CTD data may be smoothed and/or cast onto
 specified pressure levels with \code{\link{ctdDecimate}}.
 
-Low-level manipulation may be done with functions such as
-\code{\link{ctdAddColumn}} and \code{\link{ctdUpdateHeader}}.  Additionally,
+As with all oce objects, low-level manipulation may be done with
+\code{\link{oceSetData}} and \code{\link{oceSetMetadata}}. Additionally,
 many of the contents of CTD objects may be altered with the \code{\link{[[,ctd-method}} scheme
 discussed above, and skilled users may also manipulate the contents directly.
 }
-\author{
-Dan Kelley
-}
+
 \seealso{
+Other things related to \code{ctd} data: \code{\link{[[,ctd-method}},
+  \code{\link{[[<-,ctd-method}}, \code{\link{as.ctd}},
+  \code{\link{cnvName2oceName}}, \code{\link{ctdDecimate}},
+  \code{\link{ctdFindProfiles}}, \code{\link{ctdRaw}},
+  \code{\link{ctdTrim}}, \code{\link{ctd}},
+  \code{\link{handleFlags,ctd-method}},
+  \code{\link{oceNames2whpNames}},
+  \code{\link{oceUnits2whpUnits}},
+  \code{\link{plot,ctd-method}}, \code{\link{plotProfile}},
+  \code{\link{plotScan}}, \code{\link{plotTS}},
+  \code{\link{read.ctd.itp}}, \code{\link{read.ctd.odf}},
+  \code{\link{read.ctd.sbe}},
+  \code{\link{read.ctd.woce.other}},
+  \code{\link{read.ctd.woce}}, \code{\link{read.ctd}},
+  \code{\link{subset,ctd-method}},
+  \code{\link{summary,ctd-method}},
+  \code{\link{woceNames2oceNames}},
+  \code{\link{woceUnit2oceUnit}}, \code{\link{write.ctd}}
+
 Other classes provided by \code{oce}: \code{\link{adp-class}},
   \code{\link{adv-class}}, \code{\link{argo-class}},
   \code{\link{bremen-class}}, \code{\link{cm-class}},
@@ -124,23 +143,7 @@ Other classes provided by \code{oce}: \code{\link{adp-class}},
   \code{\link{sealevel-class}},
   \code{\link{section-class}}, \code{\link{topo-class}},
   \code{\link{windrose-class}}
-
-Other things related to \code{ctd} data: \code{\link{[[,ctd-method}},
-  \code{\link{[[<-,ctd-method}}, \code{\link{as.ctd}},
-  \code{\link{cnvName2oceName}},
-  \code{\link{ctdAddColumn}}, \code{\link{ctdDecimate}},
-  \code{\link{ctdFindProfiles}}, \code{\link{ctdRaw}},
-  \code{\link{ctdTrim}}, \code{\link{ctdUpdateHeader}},
-  \code{\link{ctd}}, \code{\link{gps-class}},
-  \code{\link{handleFlags,ctd-method}},
-  \code{\link{plot,ctd-method}}, \code{\link{plotProfile}},
-  \code{\link{plotScan}}, \code{\link{plotTS}},
-  \code{\link{read.ctd.itp}}, \code{\link{read.ctd.odf}},
-  \code{\link{read.ctd.sbe}},
-  \code{\link{read.ctd.woce.other}},
-  \code{\link{read.ctd.woce}}, \code{\link{read.ctd}},
-  \code{\link{subset,ctd-method}},
-  \code{\link{summary,ctd-method}},
-  \code{\link{woceNames2oceNames}}, \code{\link{write.ctd}}
 }
-
+\author{
+Dan Kelley
+}

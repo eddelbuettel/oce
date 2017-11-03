@@ -16,7 +16,8 @@
 quantities to plot.  These are stacked in a single column.  The possible
 values for \code{which} are as follows: \code{1} or \code{"temperature"} for
 a time series of temperature; \code{2} or \code{"salinity"} for salinity;
-\code{3} or \code{"TS"} for a TS diagram; \code{4} or \code{"u"} for a
+\code{3} or \code{"TS"} for a TS diagram (which uses \code{eos="unesco"}),
+\code{4} or \code{"u"} for a
 timeseries of the u component of velocity; \code{5} or \code{"v"} for a
 timeseries of the v component of velocity; \code{6} or \code{"nitrate"} for
 a timeseries of nitrate concentration; \code{7} or \code{"fluorescence"} for
@@ -46,19 +47,18 @@ default, in order to use more space for the data and less for the axes.}
 
 \item{mar}{value to be used with \code{\link{par}("mar")}.}
 
-\item{debug}{An integer specifying whether debugging information is
+\item{debug}{an integer specifying whether debugging information is
 to be printed during the processing. This is a general parameter that
 is used by many \code{oce} functions. Generally, setting \code{debug=0}
 turns off the printing, while higher values suggest that more information
-be printed.}
+be printed. If one function calls another, it usually reduces the value of
+\code{debug} first, so that a user can often obtain deeper debugging
+by specifying higher \code{debug} values.}
 
 \item{\dots}{optional arguments passed to plotting functions.}
 }
 \description{
 Plot a summary diagram for lobo data.
-}
-\author{
-Dan Kelley
 }
 \seealso{
 Other functions that plot \code{oce} data: \code{\link{plot,adp-method}},
@@ -90,4 +90,6 @@ Other things related to \code{lobo} data: \code{\link{[[,lobo-method}},
   \code{\link{subset,lobo-method}},
   \code{\link{summary,lobo-method}}
 }
-
+\author{
+Dan Kelley
+}

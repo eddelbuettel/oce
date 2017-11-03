@@ -9,10 +9,10 @@ imagep(x, y, z, xlim, ylim, zlim, zclip = FALSE, flipy = FALSE, xlab = "",
   decimate = TRUE, breaks, col, colormap, labels = NULL, at = NULL,
   drawContours = FALSE, drawPalette = TRUE, drawTriangles = FALSE,
   tformat, drawTimeRange = getOption("oceDrawTimeRange"),
-  filledContour = FALSE, missingColor = NULL, mgp = getOption("oceMgp"),
-  mar, mai.palette, xaxs = "i", yaxs = "i", cex = par("cex"),
-  adorn = NULL, axes = TRUE, main = "", axisPalette,
-  debug = getOption("oceDebug"), ...)
+  filledContour = FALSE, missingColor = NULL, useRaster,
+  mgp = getOption("oceMgp"), mar, mai.palette, xaxs = "i", yaxs = "i",
+  asp = NA, cex = par("cex"), adorn = NULL, axes = TRUE, main = "",
+  axisPalette, add = FALSE, debug = getOption("oceDebug"), ...)
 }
 \arguments{
 \item{x, y}{These have different meanings in different modes of operation.
@@ -22,11 +22,11 @@ matrix \code{z} are defined. In this case, both \code{x} and \code{y}
 must be supplied and, within each, the values must be finite and
 distinct; if values are out of order, they (and \code{z}) will be
 transformed to put them in order.
-ordered in a matching way).  \strong{Mode 2.}
+ordered in a matching way).  \emph{Mode 2.}
 If \code{z} is provided but not \code{x} and \code{y}, then the latter
-are constructed to 
+are constructed to
 indicate the indices of the matrix, in contrast
-to the range of 0 to 1, as is the case for \code{\link{image}}.  
+to the range of 0 to 1, as is the case for \code{\link{image}}.
 \emph{Mode 3.} If
 \code{x} is a list, its components \code{x$x} and \code{x$y} are used
 for \code{x} and \code{y}, respectively. If the list has component
@@ -44,9 +44,15 @@ description here.)}
 
 \item{xlim, ylim}{Limits on x and y axes.}
 
-\item{zlim}{Either a pair of numbers giving the limits for the colour scale,
-or \code{"histogram"} to have a flattened histogram (i.e. to maximally
-increase contrast throughout the domain.)}
+\item{zlim}{If missing, the z scale is determined by the range of the data.
+If provided, \code{zlim} may take several forms. First, it may be a pair
+of numbers that specify the limits for the colour scale.  Second,
+it could be the string \code{"histogram"}, to yield a flattened
+histogram (i.e. to increase contrast). Third, it could be the
+string \code{"symmetric"}, to yield limits that are symmetric
+about zero, which can be helpful in drawing velocity fields,
+for which a zero value has a particular meaning (in which case,
+a good colour scheme might be \code{col=\link{oceColorsTwo}}).}
 
 \item{zclip}{Logical, indicating whether to clip the colours to those
 corresponding to \code{zlim}. This only works if \code{zlim} is
@@ -72,7 +78,7 @@ be represented by a pixel in the image. \strong{Case 2 (the default).}
 If \code{decimate=TRUE}, then decimation will be done
 in the horizontal or vertical direction (or both) if the length of the
 corresponding edge of the \code{z} matrix exceeds 800. (This also creates
-a warning message.) The decimation 
+a warning message.) The decimation
 factor is computed as the integet just below the ratio of \code{z} dimension
 to 400. Thus, no decimation is done if the dimension is less than 800,
 but if the dimension s between 800 and 1199, only every second grid
@@ -134,7 +140,13 @@ hours if the range is less than a day, etc.}
 contours to plot the image.}
 
 \item{missingColor}{A colour to be used to indicate missing data, or
-\code{NULL} to avoid making the indication.}
+\code{NULL} for transparent (to see this, try setting
+\code{par("bg")<-"red"}).}
+
+\item{useRaster}{A logical value passed to \code{\link{image}}, in cases
+where \code{filledContour} is \code{FALSE}. Setting \code{useRaster=TRUE}
+can alleviate some anti-aliasing effects on some plot devices;
+see the documentaiton for \code{\link{image}}.}
 
 \item{mgp}{A 3-element numerical vector to use for \code{par(mgp)}, and
 also for \code{par(mar)}, computed from this.  The default is
@@ -153,6 +165,12 @@ of x axis (with value \code{"i"}) or not; see
 \code{\link[graphics]{par}}("xaxs").}
 
 \item{yaxs}{As \code{xaxs} but for y axis.}
+
+\item{asp}{Aspect ratio of the plot, as for \code{\link{plot.default}}. If
+\code{x} inherits from \code{\link{topo-class}} and \code{asp=NA} (the
+default) then \code{asp} is redefined to be the reciprocal of the
+mean latitude in \code{x}, as a way to reduce geographical distortion.
+Otherwise, if \code{asp} is not \code{NA}, then it is used directly.}
 
 \item{cex}{Size of labels on axes and palette; see \code{\link[graphics]{par}}("cex").}
 
@@ -181,6 +199,16 @@ defunct \code{oce} features.)}
 \item{axisPalette}{Optional replacement function for \code{axis()}, passed to
 \code{\link{drawPalette}}.}
 
+\item{add}{Logical value indicating whether to add to an existing plot.
+The default value, \code{FALSE} indicates that a new plot is to be created.
+However, if \code{add} is \code{TRUE}, the idea is to add an image (but not
+its palette or its axes) to an existing plot. Clearly, then, arguments
+such \code{xlim} are to be ignored. Indeed, if \code{add=TRUE}, the only
+arguments examined are \code{x} (which must be a vector; the mode of providing
+a matrix or \code{oce} object does not work), \code{y}, \code{z},
+\code{decimate}, plus either \code{colormap} or
+both \code{breaks} and \code{col}.}
+
 \item{debug}{A flag that turns on debugging.  Set to 1 to get a
 moderate amount of debugging information, or to 2 to get more.}
 
@@ -194,7 +222,7 @@ A list is silently returned, containing \code{xat} and \code{yat},
 \description{
 Plot an image with a colour palette, in a way that does not conflict with
 \code{\link{par}(mfrow)} or \code{\link{layout}}.  To plot just a palette,
-e.g. to get an x-y plot with points coloured according to a palette, use 
+e.g. to get an x-y plot with points coloured according to a palette, use
 \code{\link{drawPalette}} and then draw the main diagram.
 }
 \details{
@@ -213,30 +241,6 @@ it borrows a the convention that the number of rows in the matrix corresponds to
 to \code{x} axis, not the \code{y} axis.  (Actually, \code{\link{image}} permits
 the length of \code{x} to match either \code{nrow(z)} or \code{1+nrow(z)}, but
 here only the first is permitted.)
-}
-\section{Note for RStudio/OSX users}{
-
-On OSX computers, some versions of RStudio produce a margin-size error when
-\code{imagep} is called. The problem is not isolated to \code{imagep};
-it occurs with other packages, and a web
-search reveals repeated bug reports submitted to RStudio. 
-The problem seems to come and go, as RStudio evolves. In the
-\code{imagep} case, things worked properly for
-RStudio version 0.99.451 (released late in 2015), but not
-for version 0.99.878 (released early
-in 2016). A bug report was sent to RStudio in
-January 2016, with a minimal example that boiled the issue
-down to a few lines of basic R code (not using \code{imagep}
-or even \code{oce}).
-Although communications with RStudio gave 
-reason for optimism, the problem persisted in version 0.99.892,
-released March 4. New versions of RStudio will be checked as they
-come out, with status updates here.
-Pending an RStudio solution, users can avoid the error
-simply by opening 
-a new (and separate) plotting window with \code{\link{dev.new}}.
-In doing so, they may find that this is preferable generally,
-given the limitations of one-window interfaces.
 }
 \examples{
 library(oce)
@@ -267,11 +271,10 @@ cm <- colormap(name="gmt_globe")
 imagep(topoWorld, colormap=cm)
 
 }
-\author{
-Dan Kelley and Clark Richards
-}
 \seealso{
 This uses \code{\link{drawPalette}}, and is used by \code{\link{plot,adp-method}},
 \code{\link{plot,landsat-method}}, and other image-generating functions.
 }
-
+\author{
+Dan Kelley and Clark Richards
+}
