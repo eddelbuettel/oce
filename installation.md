@@ -25,7 +25,7 @@ normally installs packages, e.g. on an OS X machine, type the following in a
 terminal (console) window (adjusting version numbers, as appropriate):
 
 ```bash
-R CMD install oce_0.9-23.tgz
+R CMD install oce_1.0-1.tgz
 R CMD install ocedata_0.1.4.tgz
 ```
 
@@ -51,7 +51,7 @@ the OS commands stated below (adjusting version numbers, as appropriate).
 
     ```bash
 R CMD build oce
-R CMD install oce_0.9-23.tar.gz
+R CMD install oce_1.0-1.tar.gz
 R CMD build ocedata
 R CMD install ocedata_0.1.4.gz
 ```
