@@ -5,7 +5,7 @@ title: Installation
 submenu: installation
 ---
 
-## CRAN version (cautious users)
+**CRAN version (cautious users)**
 
 The stable version of oce is provided on the R archives.  It is installed
 from within R with
