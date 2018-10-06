@@ -5,7 +5,7 @@ title: Installation
 submenu: installation
 ---
 
-**aCRAN version (cautious users)**
+**CRAN version (cautious users)**
 
 The stable version of oce is provided on the R archives.  It is installed
 from within R with
@@ -14,7 +14,7 @@ from within R with
 install.packages("oce")
 ```
 
-## Pre-compiled development version
+**Pre-compiled development version**
 
 Occasionally, `oce` is compiled for MSWindows and for OS X.
 The results are stored at [a Dropbox
@@ -37,7 +37,7 @@ the downloaded package files by using the menu item *Install Packages* under
 the *Tools* menu, and selecting *Install from: Package archive file.* A similar
 approach can be used with the R.app GUI under the *Packages & Data* menu.
 
-## Source-code development version
+**Source-code development version**
 
 Users who are set up to build packages (which requires a C compiler, etc; see
 note 1) may stay at the cutting edge by installing a development version.  This
