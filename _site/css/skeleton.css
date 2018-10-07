@@ -77,13 +77,13 @@
     /* Note: Design for a width of 768px */
 
     @media only screen and (min-width: 768px) and (max-width: 959px) {
+        /* DEK: this messes up the LHS */
         .container                                  { width: 768px; }
         .container .column,
-        .container .columns                         { margin-left: 10px; margin-right: 10px;  }
+        .container .columns                         { margin-left: 10px; margin-left: 10px; margin-right: 10px;  }
         .column.alpha, .columns.alpha               { margin-left: 0; margin-right: 10px; }
         .column.omega, .columns.omega               { margin-right: 0; margin-left: 10px; }
         .alpha.omega                                { margin-left: 0; margin-right: 0; }
-
         .container .one.column,
         .container .one.columns                     { width: 28px; }
         .container .two.columns                     { width: 76px; }
@@ -101,7 +101,6 @@
         .container .fourteen.columns                { width: 652px; }
         .container .fifteen.columns                 { width: 700px; }
         .container .sixteen.columns                 { width: 748px; }
-
         .container .one-third.column                { width: 236px; }
         .container .two-thirds.column               { width: 492px; }
 
@@ -207,7 +206,7 @@
 
 /* DEK: iphone SE */
     @media only screen and (max-width:480px) {
-        .container { width: 300px; margin: 0; font: 14px/16px "HelveticaNeue", "Helvetica Neue", Arial;}
+        .container { width: 300px; margin: 0; font: 14px/20px "HelveticaNeue", "Helvetica Neue", Arial;}
         .container .columns,
         .container .column,
         .container .one.column,
