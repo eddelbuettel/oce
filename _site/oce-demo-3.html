@@ -2,87 +2,88 @@
 <!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
 <!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
 <!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
-<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="en">
+<!--<![endif]-->
 <head>
-
-<!-- the css and html are based on https://github.com/dhg/Skeleton -->
-
-<!-- Basic Page Needs
-  ================================================== -->
-<meta charset="utf-8">
-<title>Oce: an R package for Oceanography</title>
-<meta name="description" content="Oce: an R package for oceanographic analysis">
-<meta name="author" content="Dan Kelley">
-
-
-<!-- Mobile Specific Metas
-  ================================================== -->
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
-<!-- CSS
-  ================================================== -->
-
-<link rel="stylesheet" href="/css/base.css">
-<link rel="stylesheet" href="/css/skeleton.css">
-<link rel="stylesheet" href="/css/layout.css">
-<link rel="stylesheet" href="/css/syntax.css">
-<!-- <link rel="stylesheet" href="/css/style.css"> -->
-
-<!-- Favicon
-        ================================================== -->
-<link rel="shortcut icon" href="src/images/favicon.ico">
-
+    <!-- the css and html are based on https://github.com/dhg/Skeleton -->
+    <meta charset="utf-8">
+    <title>Oce: an R package for Oceanography</title>
+    <meta name="description" content="Oce: an R package for oceanographic analysis">
+    <meta name="author" content="Dan Kelley">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/css/base.css">
+    <!-- <link rel="stylesheet" href="/css/skeleton.css"> -->
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- <link rel="shortcut icon" href="src/images/favicon.ico"> -->
 </head>
-
 <body>
-<div class="container">
-    <div class="three columns sidebar">
-        <nav>
-        <img src="/css/oce-logo-3.png" alt="OCE">
-            <ul style="text-decoration: none" >
-                <li><a href="/oce/index.html">Overview</a></li>
-                <li><a href="/oce/installation.html">Installation</a></li>
-                <li><a href="/oce/examples.html">Examples</a></li>
-                <li><a href="/oce/documentation.html">Documentation</a></li>
-                <li><a href="/oce/datasets.html">Datasets</a></li>
-                <li><a href="/oce/bugs.html">Bugs</a></li>
+    <div class="container">
+        <div class="row">
+            <img src="/css/oce-logo-3.png" align="left" alt="OCE">
+            <ul style="font-size:100%;margin-left:10em;margin-top:1ex;">
+                <li style="line-height:1ex;">
+                    <a href="/oce/index.html">Overview</a>
+                </li>
+                <li style="line-height:1ex;">
+                    <a href="/oce/installation.html">Installation</a>
+                </li>
+                <li style="line-height:1ex;">
+                    <a href="/oce/examples.html">Examples</a>
+                </li>
+                <li style="line-height:1ex;">
+                    <a href="/oce/documentation.html">Documentation</a>
+                </li>
+                <li style="line-height:1ex;">
+                    <a href="/oce/datasets.html">Datasets</a>
+                </li>
+                <li style="line-height:1ex;">
+                    <a href="/oce/bugs.html">Bugs</a>
+                </li>
             </ul>
-        </nav>
-        &nbsp;
-    </div>
-    <div class="twelve columns offset-by-one content">
-        <header>
-            <h1>oce demo 3</h1>
-            <!--<a href="http://twitter.com/share" class="twitter-share-button" data-text="Skeleton - A Beautiful Boilerplate for Responsive, Mobile-Friendly Development" data-count="horizontal" data-via="dhg">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>-->
-        </header>
+            <!--
+            <div class="two columns">
+                <img src="/css/oce-logo-3.png" alt="OCE">
+                <p style="font-size:130%, margin-left:1em">
+                <a href="/oce/index.html">Overview</a> |
+                <a href="/oce/installation.html">Installation</a> |
+                <a href="/oce/examples.html">Examples</a> |
+                <a href="/oce/documentation.html">Documentation</a> |
+                <a href="/oce/datasets.html">Datasets</a> |
+                <a href="/oce/bugs.html">Bugs</a>
+                </p>
+            </div>
+            -->
+        </div> <!-- row -->
         <hr class="large" />
-
-<div id="content">
-    <p><code>r
-library(oce)
-library(oce)
-data(sealevelHalifax)
-m &lt;- tidem(sealevelHalifax)
-par(mfrow=c(2,1))
-plot(sealevelHalifax, which=1)
-plot(m)
-</code></p>
-
-
-</div>
-
-        <!-- END {the actual content} -->
+        <div class="row">
+            <div class="twelve columns offset-by-one content">
+                <header>
+                    <h1>oce demo 3</h1>
+                </header>
+                <div id="content">
+                    <div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">oce</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">oce</span><span class="p">)</span><span class="w">
+</span><span class="n">data</span><span class="p">(</span><span class="n">sealevelHalifax</span><span class="p">)</span><span class="w">
+</span><span class="n">m</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">tidem</span><span class="p">(</span><span class="n">sealevelHalifax</span><span class="p">)</span><span class="w">
+</span><span class="n">par</span><span class="p">(</span><span class="n">mfrow</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">1</span><span class="p">))</span><span class="w">
+</span><span class="n">plot</span><span class="p">(</span><span class="n">sealevelHalifax</span><span class="p">,</span><span class="w"> </span><span class="n">which</span><span class="o">=</span><span class="m">1</span><span class="p">)</span><span class="w">
+</span><span class="n">plot</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
 
 
-    </div><!-- container -->
-</div><!-- container -->
-
-<p class="footnote">This website is written in <a
-    href="http://jekyllrb.com">Jekyll</a>, and the source is available on <a
-    href="https://github.com/dankelley/oce/tree/gh-pages">GitHub</a>.</p>
-
-<div class="resize"></div>
-
+                </div>
+                </div> <!-- twelve columns offset-by-one content" -->
+        </div> <!-- row -->
+        <div class="row">
+            <p class="footnote">This website is written in <a
+               href="http://jekyllrb.com">Jekyll</a>, and the source is available on <a
+               href="https://github.com/dankelley/oce/tree/gh-pages">GitHub</a>.</p>
+            <div class="resize"></div>
+        </div> <!-- row -->
+    </div> <!-- container-->
 </body>
 </html>
 

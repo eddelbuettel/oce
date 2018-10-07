@@ -22,3 +22,4 @@ tests_private
 revdep
 vignettes
 
+_site/tests
