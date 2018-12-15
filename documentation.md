@@ -23,7 +23,7 @@ href="https://www.springer.com/us/book/9781493988426">Springer</a>, and other
 sources, e.g.  <a
 href="https://www.amazon.com/Oceanographic-Analysis-R-Dan-Kelley/dp/1493988425/ref=sr_1_1?ie=UTF8&qid=1538313197&sr=8-1&keywords=dan+e+kelley&dpID=31BCT11P-rL&preST=_SY344_BO1,204,203,200_QL70_&dpSrc=srch">Amazon</a>.
 A provisional table of contents (from his pre-publication draft) is given
-below.</p>
+below.
 
 ![toc 1]({{ site.url }}/oce/web/oar-toc-1.png)
 
