@@ -1458,7 +1458,7 @@ coastlineCut <- function(coastline, lon_0=0)
 #' of any coastline segments that are only partly contained within the box,
 #' which permits accurat filled coastline plots of the subdomain. It
 #' makes sense to set the focus box to be larger than will be required
-#' in plotting, so that \code{\link{plot,coastlinemethod}} will
+#' in plotting, so that \code{\link{plot,coastline-method}} will
 #' not leave white bands at the top/bottom or left/right sides of
 #' the plot panel, depending on the geometry of the plot device. (The
 #' code in \dQuote{Examples} produces such artifacts on the left
@@ -1479,10 +1479,6 @@ coastlineCut <- function(coastline, lon_0=0)
 #'
 #' @param north Latitude of the northrn boundary of the retained region.
 #'
-#' @param subset An expression indicating how to subset \code{x}, or a character string
-#' indicating the same information.
-#' @template debugTemplate
-#'
 #' @template debugTemplate
 #'
 #' @return A \code{coastline} object.
@@ -1502,6 +1498,10 @@ coastlineTrim <- function(x, west=-180, east=180, south=-90, north=90, debug=get
 {
     if (!inherits(x, "coastline"))
         stop("x must be a \"coastline\" object")
+    if (!requireNamespace("raster"))
+        stop("must install.packages(\"raster\") for coastline subset to work")
+    if (!requireNamespace("sp"))
+        stop("must install.packages(\"sp\") for coastline subset to work")
     oceDebug(debug, "coastlineTrim(x, east=", east, ", west=", west,
              ", south=", south, ", north=", north, sep="", unindent=1)
     if (east <= west)
@@ -1520,8 +1520,10 @@ coastlineTrim <- function(x, west=-180, east=180, south=-90, north=90, debug=get
     cllat <- x[["latitude"]]
     norig <- length(cllon)
     box <- as(raster::extent(west, east, south, north), "SpatialPolygons")
+    ##boxp <- sp::Polygon(cbind(c(west, west, east, east), c(south, north, north, south)))
+    ##box <- sp::SpatialPolygons(list(boxp), 1L)
     owarn <- options("warn")$warn
-    options(warn=-1)
+    options(warn=-1) # prevent "polygons do not intersect" warnings
     na <- which(is.na(cllon))
     nseg <- length(na)
     nnew <- 0
@@ -1539,6 +1541,7 @@ coastlineTrim <- function(x, west=-180, east=180, south=-90, north=90, debug=get
             A <- sp::Polygon(cbind(lon, lat))
             B <- sp::Polygons(list(A), "A")
             C <- sp::SpatialPolygons(list(B))
+            ## capture output to silence warnings that occur despite options() above
             i <- raster::intersect(box, C)
             if (!is.null(i)) {
                 for (j in seq_along(i@polygons)) {

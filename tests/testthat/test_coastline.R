@@ -23,6 +23,11 @@ test_that("various methods of coastline creation", {
 
 test_that("coastlineCut", {
           data(coastlineWorld)
-          expect_silent(cw180 <- coastlineCut(coastlineWorld, lon_0=100))
+          ## NOTE: the warning is silenced in normal usage because
+          ## coastlineCut() sets options(warn=-1), but we still need
+          ## to anticipate warnings, because testthat tricks the system
+          ## into ignoring the options(warn) setting.
+          cw100 <- expect_warning(coastlineCut(coastlineWorld, lon_0=100),
+                                  "polygons do not intersect")
 })
 

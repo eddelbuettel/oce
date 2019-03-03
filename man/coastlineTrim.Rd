@@ -25,17 +25,6 @@ turns off the printing, while higher values suggest that more information
 be printed. If one function calls another, it usually reduces the value of
 \code{debug} first, so that a user can often obtain deeper debugging
 by specifying higher \code{debug} values.}
-
-\item{subset}{An expression indicating how to subset \code{x}, or a character string
-indicating the same information.}
-
-\item{debug}{an integer specifying whether debugging information is
-to be printed during the processing. This is a general parameter that
-is used by many \code{oce} functions. Generally, setting \code{debug=0}
-turns off the printing, while higher values suggest that more information
-be printed. If one function calls another, it usually reduces the value of
-\code{debug} first, so that a user can often obtain deeper debugging
-by specifying higher \code{debug} values.}
 }
 \value{
 A \code{coastline} object.
@@ -50,7 +39,7 @@ Fake points are added along the boundary
 of any coastline segments that are only partly contained within the box,
 which permits accurat filled coastline plots of the subdomain. It
 makes sense to set the focus box to be larger than will be required
-in plotting, so that \code{\link{plot,coastlinemethod}} will
+in plotting, so that \code{\link{plot,coastline-method}} will
 not leave white bands at the top/bottom or left/right sides of
 the plot panel, depending on the geometry of the plot device. (The
 code in \dQuote{Examples} produces such artifacts on the left
