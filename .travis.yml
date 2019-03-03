@@ -14,8 +14,9 @@ addons:
 r_packages:
     - devtools
     - rgdal
-    - ncdf4
+    - rgeos
     - covr
+    - ncdf4
 env:
     global:
         - _R_CHECK_FORCE_SUGGESTS_=False
