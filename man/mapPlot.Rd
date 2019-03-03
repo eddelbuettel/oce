@@ -449,6 +449,7 @@ for (i in seq_along(lons)) {
                 xlim=xlim, ylim=ylim, xaxs="i", yaxs="i")
     }
 }
+dev.off()
 }
 }
 \references{

@@ -1435,10 +1435,14 @@ coastlineCut <- function(coastline, lon_0=0)
         cut$yo <- cut$yo[1:cut$no]
         as.coastline(longitude=cut$xo, latitude=cut$yo)
     } else {
-        str <- sprintf("-180 < longitude & longitude < %f & -90 < latitude & latitude < 90", loncut)
-        w <- subset(coastline, str, debug=10)
-        str <- sprintf("%f < longitude & longitude < 180 & -90 < latitude & latitude < 90", loncut)
-        e <- subset(coastline, str, debug=10)
+        epsilon <- 0                   # 1e-3
+        if (abs(loncut - 180) <= epsilon)
+            return(coastline)
+        w <- coastlineTrim(coastline, west=-180, east=loncut-epsilon, south=-90, north=90)
+        e <- coastlineTrim(coastline, west=loncut+epsilon, east=180, south=-90, north=90)
+        lonCombined <- c(w[["longitude"]], NA, e[["longitude"]])
+        as.coastline(longitude=c(w[["longitude"]], NA, e[["longitude"]]),
+                     latitude=c(w[["latitude"]], NA, e[["latitude"]]))
     }
 }
 
@@ -1500,9 +1504,9 @@ coastlineTrim <- function(x, west=-180, east=180, south=-90, north=90, debug=get
     oceDebug(debug, "coastlineTrim(x, east=", east, ", west=", west,
              ", south=", south, ", north=", north, sep="", unindent=1)
     if (east <= west)
-        stop("east must exceed west")
+        stop("east=", east, " does not exceed west=", west)
     if (north <= south)
-        stop("north must exceed south")
+        stop("north=", north, " does not exceed south=", south)
     res <- x
     NAendpoints <- function(x) {
         if (!is.na(x[1]))

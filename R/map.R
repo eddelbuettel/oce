@@ -1188,6 +1188,7 @@ mapLongitudeLatitudeXY <- function(longitude, latitude)
 #'                 xlim=xlim, ylim=ylim, xaxs="i", yaxs="i")
 #'     }
 #' }
+#' dev.off()
 #'}
 #
 #' @section Available Projections:
