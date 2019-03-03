@@ -94,166 +94,191 @@ setMethod(f="[[<-",
               callNextMethod(x=x, i=i, j=j, ...=..., value=value) # [[<-
           })
 
-#' Subset a Coastline Object
-#'
-#' Subsets a coastline object according to limiting values for longitude
-#' and latitude. The \CRANpkg{raster} package must be installed for this
-#' to work, because it relies on the \code{\link[raster]{intersect}} function
-#' from that package.
-#'
-#' As illustrated in the \dQuote{Examples}, \code{subset} must be an
-#' expression that indicates limits on \code{latitude} and
-#' \code{longitude}. The individual elements are provided in R notation,
-#' not mathematical notation (i.e. \code{30<latitude<60} would not work).
-#' Ampersands must be used to combine the limits.  The simplest way
-#' to understand this is to copy the example directly, and then modify
-#' the stated limits. Note that \code{>} comparison is not permitted,
-#' and that \code{<} is converted to \code{<=} in the calculation.
-#' Similarly, \code{&&} is converted to \code{&}. Spaces in the
-#' expression are ignored. For convenience, \code{longitude} and
-#' and \code{latitude} may be abbreviated as \code{lon} and \code{lat},
-#' as in the \dQuote{Examples}.
-#'
-#' @param x A \code{coastline} object, i.e. one inheriting from \code{\link{coastline-class}}.
-#'
-#' @param subset An expression indicating how to subset \code{x}. See \dQuote{Details}.
-#'
-#' @param ... optional additional arguments, the only one of which is considered
-#' is one named \code{debug}, an integer that controlls the level of debugging. If
-#' this is not supplied, \code{debug} is assumed to be 0, meaning no debugging. If
-#' it is 1, the steps of determining the bounding box are shown. If it is 2 or larger,
-#' then additional processing steps are shown, including the extraction of every
-#' polygon involved in the final result.
-#'
-#' @return A \code{coastline} object.
-#'
-#' @author Dan Kelley
-#'
-#' @examples
-#'\donttest{
-#' library(oce)
-#' data(coastlineWorld)
-#' ## Eastern Canada
-#' cl <- subset(coastlineWorld, -80<lon & lon<-50 & 30<lat & lat<60)
-#' ## The plot demonstrates that the trimming is as requested.
-#' plot(cl, clon=-65, clat=45, span=6000)
-#' rect(-80, 30, -50, 60, bg="transparent", border="red")
-#'}
-#' @family things related to \code{coastline} data
-#' @family functions that subset \code{oce} objects
-setMethod(f="subset",
-          signature="coastline",
-          definition=function(x, subset, ...) {
-              if (missing(subset))
-                  stop("must give 'subset'")
-              if (!requireNamespace("raster"))
-                  stop("must install.packages(\"raster\") for coastline subset to work")
-              dots <- list(...)
-              debug <- dots$debug
-              if (is.null(debug))
-                  debug <- options("oceDebug")$debug
-              if (is.null(debug))
-                  debug <- 0
-              ## 's0' is a character string that we decompose to find W, E, S
-              ## and N.  This is done in small steps because that might help in
-              ## locating any bugs that might crop up. Note that the elements
-              ## of the string are broken down to get W, E, S and N, and so
-              ## we must start with some cleanup (e.g. removal of spaces,
-              ## conversion of && to & and <= to <) for the pattern matching
-              ## to work simply.
-              s0 <- deparse(substitute(subset), width.cutoff=500)
-              if (length(grep(">", s0)))
-                  stop("the 'subset' may not contain the character '>'")
-              oceDebug(debug, "s0='", s0, "'\n", sep="")
-              s1 <- gsub(" ", "", s0) # remove all spaces
-              oceDebug(debug, "s1='", s1, "'\n", sep="")
-              s2 <- gsub("&&", "&", gsub("=", "", gsub("[ ]*", "", s1))) # && becomes &
-              oceDebug(debug, "s2='", s2, "'\n", sep="")
-              s3 <- gsub("<=", "<", s2) # <= becomes <
-              oceDebug(debug, "s3='", s3, "'\n", sep="")
-              s4 <- strsplit(s3, "&")[[1]]
-              oceDebug(debug, "s4='", paste(s4, collapse="' '"), "'\n", sep="")
-              E <- W <- S <- N <- NA
-              for (ss in s4) {
-                  s4 <- gsub("<=", "<", ss)
-                  oceDebug(debug, "ss='", ss, "'\n", sep="")
-                  if (length(grep("<lon", s4))) {
-                      oceDebug(debug, "looking for W in '", s4, "'\n", sep="")
-                      W <- as.numeric(strsplit(s4, "<")[[1]][1])
-                  } else if (length(grep("lon[a-z]*<", s4))) {
-                      oceDebug(debug, "looking for E in '", s4, "'\n", sep="")
-                      E <- as.numeric(strsplit(s4, "<")[[1]][2])
-                  } else if (length(grep("<lat", s4))) {
-                      oceDebug(debug, "looking for S in '", s4, "'\n", sep="")
-                      S <- as.numeric(strsplit(s4, "<")[[1]][1])
-                  } else if (length(grep("lat[a-z]*<", s4))) {
-                      oceDebug(debug, "looking for N in '", s4, "'\n", sep="")
-                      N <- as.numeric(strsplit(s4, "<")[[1]][2])
-                  }
-              }
-              if (is.na(W)) stop("could not determine western longitude limit")
-              if (is.na(E)) stop("could not determine eastern longitude limit")
-              if (is.na(S)) stop("could not determine southern latitude limit")
-              if (is.na(N)) stop("could not determine northern latitude limit")
-              oceDebug(debug, "W=", W, ", E=", E, ", S=", S, ", N=", N)
-              res <- x
-              ##OLD ## FIXME: this is terrible. We gain nothing i.t.o. speed by merely setting to NA.
-              ##OLD keep <- W<=x@data$longitude & x@data$longitude<=E & S<=x@data$latitude & x@data$latitude<=N
-              ##OLD res@data$latitude[!keep] <- NA
-              ##OLD res@data$longitude[!keep] <- NA
-              NAendpoints <- function(x) {
-                  if (!is.na(x[1]))
-                      x <- c(NA, x)
-                  if (!is.na(x[length(x)]))
-                      x <- c(x, NA)
-                  x
-              }
-              cllon <- x[["longitude"]]
-              cllat <- x[["latitude"]]
-              norig <- length(cllon)
-              box <- as(raster::extent(W, E, S, N), "SpatialPolygons")
-              owarn <- options("warn")$warn
-              options(warn=-1)
-              na <- which(is.na(cllon))
-              nseg <- length(na)
-              nnew <- 0
-              outlon <- NULL
-              outlat <- NULL
-              for (iseg in 2:nseg) {
-                  look <- seq.int(na[iseg-1]+1, na[iseg]-1)
-                  lon <- cllon[look]
-                  if (any(is.na(lon))) stop("step 1: double lon NA at iseg=", iseg) # checks ok on coastlineWorld
-                  lat <- cllat[look]
-                  if (any(is.na(lat))) stop("step 1: double lat NA at iseg=", iseg) # checks ok on coastlineWorld
-                  n <- length(lon)
-                  if (n < 1) stop("how can we have no data?")
-                  if (length(lon) > 1) {
-                      A <- sp::Polygon(cbind(lon, lat))
-                      B <- sp::Polygons(list(A), "A")
-                      C <- sp::SpatialPolygons(list(B))
-                      i <- raster::intersect(box, C)
-                      if (!is.null(i)) {
-                          for (j in seq_along(i@polygons)) {
-                              for (k in seq_along(i@polygons[[1]]@Polygons)) {
-                                  xy <- i@polygons[[j]]@Polygons[[k]]@coords
-                                  seglon <- xy[, 1]
-                                  seglat <- xy[, 2]
-                                  nnew <- nnew + length(seglon)
-                                  outlon <- c(outlon, NA, seglon)
-                                  outlat <- c(outlat, NA, seglat)
-                                  oceDebug(debug > 1, "iseg=", iseg, ", j=", j, ", k=", k, "\n", sep="")
-                              }
-                          }
-                      }
-                  }
-              }
-              res@data$longitude <- outlon
-              res@data$latitude <- outlat
-              options(warn=owarn)
-              res@processingLog <- processingLogAppend(res@processingLog,
-                                                       paste("subset(x, ", s0, ")", sep=""))
-              res
-          })
+## I decided that this is just too complicated for users, and to code.
+## See https://github.com/dankelley/oce/issues/1498 for some comments.
+##- #' Subset a Coastline Object
+##- #'
+##- #' Subsets a coastline object according to limiting values for longitude
+##- #' and latitude. The \CRANpkg{raster} package must be installed for this
+##- #' to work, because it relies on the \code{\link[raster]{intersect}} function
+##- #' from that package.
+##- #'
+##- #' As illustrated in the \dQuote{Examples}, \code{subset} must be an
+##- #' expression that indicates limits on \code{latitude} and
+##- #' \code{longitude}. The individual elements are provided in R notation,
+##- #' not mathematical notation (i.e. \code{30<latitude<60} would not work).
+##- #' Ampersands must be used to combine the limits.  The simplest way
+##- #' to understand this is to copy the example directly, and then modify
+##- #' the stated limits. Note that \code{>} comparison is not permitted,
+##- #' and that \code{<} is converted to \code{<=} in the calculation.
+##- #' Similarly, \code{&&} is converted to \code{&}. Spaces in the
+##- #' expression are ignored.
+##- #'
+##- #' @param x A \code{coastline} object, i.e. one inheriting from \code{\link{coastline-class}}.
+##- #'
+##- #' @param subset An expression indicating how to subset \code{x}, or a character string
+##- #' indicating the same information.
+##- #'
+##- #' @param ... optional additional arguments, the only one of which is considered
+##- #' is one named \code{debug}, an integer that controlls the level of debugging. If
+##- #' this is not supplied, \code{debug} is assumed to be 0, meaning no debugging. If
+##- #' it is 1, the steps of determining the bounding box are shown. If it is 2 or larger,
+##- #' then additional processing steps are shown, including the extraction of every
+##- #' polygon involved in the final result.
+##- #'
+##- #' @return A \code{coastline} object.
+##- #'
+##- #' @author Dan Kelley
+##- #'
+##- #' @examples
+##- #'\donttest{
+##- #' library(oce)
+##- #' data(coastlineWorld)
+##- #' ## Eastern Canada
+##- #' cl <- subset(coastlineWorld,
+##- #'     -80<longitude & longitude<-50 & 30<latitude & latitude<60)
+##- #' ## The plot demonstrates that the trimming is as requested.
+##- #' plot(cl, clon=-65, clat=45, span=6000)
+##- #' rect(-80, 30, -50, 60, bg="transparent", border="red")
+##- #'}
+##- #' @family things related to \code{coastline} data
+##- #' @family functions that subset \code{oce} objects
+##- setMethod(f="subset",
+##-           signature(x="coastline"),
+##-           definition=function(x, subset, ...) {
+##-               cat("debug 1\n")
+##-               if (missing(subset))
+##-                   stop("must give 'subset'")
+##-               if (!requireNamespace("raster"))
+##-                   stop("must install.packages(\"raster\") for coastline subset to work")
+##-               dots <- list(...)
+##-               debug <- dots$debug
+##-               cat("debug 2\n")
+##-               if (is.null(debug))
+##-                   debug <- options("oceDebug")$debug
+##-               if (is.null(debug))
+##-                   debug <- 0
+##-               debug <- 10
+##-               cat("debug 3\n")
+##-               ## 's0' is a character string that we decompose to find W, E, S
+##-               ## and N.  This is done in small steps because that might help in
+##-               ## locating any bugs that might crop up. Note that the elements
+##-               ## of the string are broken down to get W, E, S and N, and so
+##-               ## we must start with some cleanup (e.g. removal of spaces,
+##-               ## conversion of && to & and <= to <) for the pattern matching
+##-               ## to work simply.
+##-               if (is.character(substitute(subset))) {
+##-                   cat("debug 4a\n")
+##-                   message("is char")
+##-                   s0 <- subset
+##-               } else {
+##-                   cat("debug 4b\n")
+##-                   message("is not char")
+##-                   s0 <- deparse(substitute(subset), width.cutoff=500)
+##-               }
+##-               if (length(grep(">", s0)))
+##-                   stop("the 'subset' may not contain the character '>'")
+##-               oceDebug(debug, "s0='", s0, "'\n", sep="")
+##-               s1 <- gsub(" ", "", s0) # remove all spaces
+##-               oceDebug(debug, "s1='", s1, "'\n", sep="")
+##-               s2 <- gsub("&&", "&", gsub("=", "", gsub("[ ]*", "", s1))) # && becomes &
+##-               oceDebug(debug, "s2='", s2, "'\n", sep="")
+##-               s3 <- gsub("<=", "<", s2) # <= becomes <
+##-               oceDebug(debug, "s3='", s3, "'\n", sep="")
+##-               s4 <- strsplit(s3, "&")[[1]]
+##-               oceDebug(debug, "s4='", paste(s4, collapse="' '"), "'\n", sep="")
+##-               E <- W <- S <- N <- NA
+##-               debug <- 1
+##-               for (ss in s4) {
+##-                   s4 <- gsub("<=", "<", ss)
+##-                   oceDebug(debug, "ss='", ss, "'\n", sep="")
+##-                   if (length(grep("<longitude", s4))) {
+##-                       oceDebug(debug, "looking for W in '", s4, "'\n", sep="")
+##-                       W <- as.numeric(eval(strsplit(s4, "<")[[1]][1]))
+##-                       oceDebug(debug, " ... got W=", W, "\n", sep="")
+##-                   } else if (length(grep("longitude<", s4))) {
+##-                       oceDebug(debug, "looking for E in '", s4, "'\n", sep="")
+##-                       danny <- strsplit(s4, "<")[[1]][2]
+##-                       message("danny=", danny)
+##-                       message("A ", eval.parent(danny))
+##-                       message("B ", eval.parent(danny, 1))
+##-                       message("C ", eval.parent(danny, 2))
+##-                       browser()
+##-                       E <- as.numeric(eval(strsplit(s4, "<")[[1]][2]))
+##-                       oceDebug(debug, " ... got E=", E, "\n", sep="")
+##-                   } else if (length(grep("<latitude", s4))) {
+##-                       oceDebug(debug, "looking for S in '", s4, "'\n", sep="")
+##-                       S <- as.numeric(eval(strsplit(s4, "<")[[1]][1]))
+##-                       oceDebug(debug, " ... got S=", S, "\n", sep="")
+##-                   } else if (length(grep("latitude<", s4))) {
+##-                       oceDebug(debug, "looking for N in '", s4, "'\n", sep="")
+##-                       N <- as.numeric(eval(strsplit(s4, "<")[[1]][2]))
+##-                       oceDebug(debug, " ... got N=", N, "\n", sep="")
+##-                   }
+##-               }
+##-               if (is.na(W)) stop("could not determine western longitude limit")
+##-               if (is.na(E)) stop("could not determine eastern longitude limit")
+##-               if (is.na(S)) stop("could not determine southern latitude limit")
+##-               if (is.na(N)) stop("could not determine northern latitude limit")
+##-               oceDebug(debug, "W=", W, ", E=", E, ", S=", S, ", N=", N)
+##-               res <- x
+##-               ##OLD ## FIXME: this is terrible. We gain nothing i.t.o. speed by merely setting to NA.
+##-               ##OLD keep <- W<=x@data$longitude & x@data$longitude<=E & S<=x@data$latitude & x@data$latitude<=N
+##-               ##OLD res@data$latitude[!keep] <- NA
+##-               ##OLD res@data$longitude[!keep] <- NA
+##-               NAendpoints <- function(x) {
+##-                   if (!is.na(x[1]))
+##-                       x <- c(NA, x)
+##-                   if (!is.na(x[length(x)]))
+##-                       x <- c(x, NA)
+##-                   x
+##-               }
+##-               cllon <- x[["longitude"]]
+##-               cllat <- x[["latitude"]]
+##-               norig <- length(cllon)
+##-               box <- as(raster::extent(W, E, S, N), "SpatialPolygons")
+##-               owarn <- options("warn")$warn
+##-               options(warn=-1)
+##-               na <- which(is.na(cllon))
+##-               nseg <- length(na)
+##-               nnew <- 0
+##-               outlon <- NULL
+##-               outlat <- NULL
+##-               for (iseg in 2:nseg) {
+##-                   look <- seq.int(na[iseg-1]+1, na[iseg]-1)
+##-                   lon <- cllon[look]
+##-                   if (any(is.na(lon))) stop("step 1: double lon NA at iseg=", iseg) # checks ok on coastlineWorld
+##-                   lat <- cllat[look]
+##-                   if (any(is.na(lat))) stop("step 1: double lat NA at iseg=", iseg) # checks ok on coastlineWorld
+##-                   n <- length(lon)
+##-                   if (n < 1) stop("how can we have no data?")
+##-                   if (length(lon) > 1) {
+##-                       A <- sp::Polygon(cbind(lon, lat))
+##-                       B <- sp::Polygons(list(A), "A")
+##-                       C <- sp::SpatialPolygons(list(B))
+##-                       i <- raster::intersect(box, C)
+##-                       if (!is.null(i)) {
+##-                           for (j in seq_along(i@polygons)) {
+##-                               for (k in seq_along(i@polygons[[1]]@Polygons)) {
+##-                                   xy <- i@polygons[[j]]@Polygons[[k]]@coords
+##-                                   seglon <- xy[, 1]
+##-                                   seglat <- xy[, 2]
+##-                                   nnew <- nnew + length(seglon)
+##-                                   outlon <- c(outlon, NA, seglon)
+##-                                   outlat <- c(outlat, NA, seglat)
+##-                                   oceDebug(debug > 1, "iseg=", iseg, ", j=", j, ", k=", k, "\n", sep="")
+##-                               }
+##-                           }
+##-                       }
+##-                   }
+##-               }
+##-               res@data$longitude <- outlon
+##-               res@data$latitude <- outlat
+##-               options(warn=owarn)
+##-               res@processingLog <- processingLogAppend(res@processingLog,
+##-                                                        paste("subset(x, ", s0, ")", sep=""))
+##-               res
+##-           })
 
 
 #' @title Summarize a Coastline Object
@@ -1397,15 +1422,140 @@ coastlineCut <- function(coastline, lon_0=0)
     cleanAngle<-function(a)
         ifelse(a < -180, a+360, ifelse(a > 180, a-360, a))
     loncut <- cleanAngle(lon_0+180)
-    lon <- coastline[["longitude"]]
-    lat <- coastline[["latitude"]]
-    nlon <- length(lon)
-    e <- 4                             # a bit over 2 should be more than enough for any coastline
-    cut <- .C("polygon_subdivide_vertically_smash_1",
-              n=as.integer(nlon), x=as.double(lon), y=as.double(lat), x0=as.double(loncut),
-              nomax=as.integer(e*nlon), no=integer(1), xo=double(e*nlon), yo=double(e*nlon),
-              NAOK=TRUE)
-    cut$xo <- cut$xo[1:cut$no]
-    cut$yo <- cut$yo[1:cut$no]
-    as.coastline(longitude=cut$xo, latitude=cut$yo)
+    if (FALSE) {
+        lon <- coastline[["longitude"]]
+        lat <- coastline[["latitude"]]
+        nlon <- length(lon)
+        e <- 4                             # a bit over 2 should be more than enough for any coastline
+        cut <- .C("polygon_subdivide_vertically_smash_1",
+                  n=as.integer(nlon), x=as.double(lon), y=as.double(lat), x0=as.double(loncut),
+                  nomax=as.integer(e*nlon), no=integer(1), xo=double(e*nlon), yo=double(e*nlon),
+                  NAOK=TRUE)
+        cut$xo <- cut$xo[1:cut$no]
+        cut$yo <- cut$yo[1:cut$no]
+        as.coastline(longitude=cut$xo, latitude=cut$yo)
+    } else {
+        str <- sprintf("-180 < longitude & longitude < %f & -90 < latitude & latitude < 90", loncut)
+        w <- subset(coastline, str, debug=10)
+        str <- sprintf("%f < longitude & longitude < 180 & -90 < latitude & latitude < 90", loncut)
+        e <- subset(coastline, str, debug=10)
+    }
 }
+
+
+#' Trim a Coastline to a Longitude-Latitude Box
+#'
+#' Subset a coastline file to a specified sub-region, adding fake
+#' points along the intersection boundary with the box. This can speed
+#' up repeated plots of sub-domains.
+#'
+#' Fake points are added along the boundary
+#' of any coastline segments that are only partly contained within the box,
+#' which permits accurat filled coastline plots of the subdomain. It
+#' makes sense to set the focus box to be larger than will be required
+#' in plotting, so that \code{\link{plot,coastlinemethod}} will
+#' not leave white bands at the top/bottom or left/right sides of
+#' the plot panel, depending on the geometry of the plot device. (The
+#' code in \dQuote{Examples} produces such artifacts on the left
+#' and right sides for wide plot devices, and at top and bottom
+#' for tall devices.)
+#'
+#' Note that the method uses the \code{\link[raster]{intersect}} function
+#' in the \CRANpkg{raster} package, so that package must be available
+#' for \code{coastlineTrim} to work.
+#'
+#' @param x A \code{coastline} object, i.e. one inheriting from \code{\link{coastline-class}}.
+#'
+#' @param east Longitude of the eastern boundary of the retained region.
+#'
+#' @param west Longitude of the western boundary of the retained region.
+#'
+#' @param south Latitude of the southern boundary of the retained region.
+#'
+#' @param north Latitude of the northrn boundary of the retained region.
+#'
+#' @param subset An expression indicating how to subset \code{x}, or a character string
+#' indicating the same information.
+#' @template debugTemplate
+#'
+#' @template debugTemplate
+#'
+#' @return A \code{coastline} object.
+#'
+#' @author Dan Kelley
+#'
+#' @examples
+#'\donttest{
+#' library(oce)
+#' data(coastlineWorldFine, package="ocedata")
+#' ## Region centred on New Brunswick, in eastern Canada
+#' EC <- coastlineTrim(coastlineWorldFine, west=-80, east=-50, south=40, north=55)
+#' plot(EC)
+#'}
+#' @family things related to \code{coastline} data
+coastlineTrim <- function(x, west=-180, east=180, south=-90, north=90, debug=getOption("oceDebug"))
+{
+    if (!inherits(x, "coastline"))
+        stop("x must be a \"coastline\" object")
+    oceDebug(debug, "coastlineTrim(x, east=", east, ", west=", west,
+             ", south=", south, ", north=", north, sep="", unindent=1)
+    if (east <= west)
+        stop("east must exceed west")
+    if (north <= south)
+        stop("north must exceed south")
+    res <- x
+    NAendpoints <- function(x) {
+        if (!is.na(x[1]))
+            x <- c(NA, x)
+        if (!is.na(x[length(x)]))
+            x <- c(x, NA)
+        x
+    }
+    cllon <- x[["longitude"]]
+    cllat <- x[["latitude"]]
+    norig <- length(cllon)
+    box <- as(raster::extent(west, east, south, north), "SpatialPolygons")
+    owarn <- options("warn")$warn
+    options(warn=-1)
+    na <- which(is.na(cllon))
+    nseg <- length(na)
+    nnew <- 0
+    outlon <- NULL
+    outlat <- NULL
+    for (iseg in 2:nseg) {
+        look <- seq.int(na[iseg-1]+1, na[iseg]-1)
+        lon <- cllon[look]
+        if (any(is.na(lon))) stop("step 1: double lon NA at iseg=", iseg) # checks ok on coastlineWorld
+        lat <- cllat[look]
+        if (any(is.na(lat))) stop("step 1: double lat NA at iseg=", iseg) # checks ok on coastlineWorld
+        n <- length(lon)
+        if (n < 1) stop("how can we have no data?")
+        if (length(lon) > 1) {
+            A <- sp::Polygon(cbind(lon, lat))
+            B <- sp::Polygons(list(A), "A")
+            C <- sp::SpatialPolygons(list(B))
+            i <- raster::intersect(box, C)
+            if (!is.null(i)) {
+                for (j in seq_along(i@polygons)) {
+                    for (k in seq_along(i@polygons[[1]]@Polygons)) {
+                        xy <- i@polygons[[j]]@Polygons[[k]]@coords
+                        seglon <- xy[, 1]
+                        seglat <- xy[, 2]
+                        nnew <- nnew + length(seglon)
+                        outlon <- c(outlon, NA, seglon)
+                        outlat <- c(outlat, NA, seglat)
+                        ##> oceDebug(debug > 1, "iseg=", iseg, ", j=", j, ", k=", k, "\n", sep="")
+                    }
+                }
+            }
+        }
+    }
+    res@data$longitude <- outlon
+    res@data$latitude <- outlat
+    options(warn=owarn)
+    res@processingLog <- processingLogAppend(res@processingLog, paste(deparse(match.call()), sep="", collapse=""))
+    oceDebug(debug, "} # coastlineTrim()\n", sep="", unindent=1)
+    res
+}
+
+

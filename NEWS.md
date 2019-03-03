@@ -2,8 +2,9 @@
 * Development version, which will eventually yield 1.0-2. Exploratory work
   is done in the "develop" git branch, or of branches that feed into "develop".
   The rightmost fractional number is not always increased with updates to "develop".
+* i386/windows gets map projections, except for rgdal version 1.3-9
+* coastlineTrim() added
 * read.ctd.sbe() handles more column names
-* i386/windows gets map projections
 
 1.0-1
 * Renamed 0.9-24, released with OAR book publication.

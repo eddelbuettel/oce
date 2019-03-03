@@ -108,12 +108,12 @@ Other things related to \code{coastline} data: \code{\link{[[<-,coastline-method
   \code{\link{as.coastline}},
   \code{\link{coastline-class}},
   \code{\link{coastlineBest}}, \code{\link{coastlineCut}},
+  \code{\link{coastlineTrim}},
   \code{\link{coastlineWorld}},
   \code{\link{download.coastline}},
   \code{\link{plot,coastline-method}},
   \code{\link{read.coastline.openstreetmap}},
   \code{\link{read.coastline.shapefile}},
-  \code{\link{subset,coastline-method}},
   \code{\link{summary,coastline-method}}
 }
 \concept{functions that extract parts of \code{oce} objects}
