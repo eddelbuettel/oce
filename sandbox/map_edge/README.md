@@ -24,9 +24,15 @@ polygon for the earth is in transparent red, and the outline (with the dots
 that define it) is red. Also, as a check on the transformation to lon-lat, the
 outline in that system is shown in a blue dotted line.
 
+* `03.R` checks the intersection of Russia and the edge. The RH panel suggests
+  that this method holds some promise.
+
+* `04.R` checks with the whole world. All looks good, including our dear old
+  friend, Antarctica.
+
 **Next steps:**
+- [x] test the intersection (done in 03.R)
 - trace box edges
-- test the intersection
 - think about interrupted projections (maybe ignore for now)
 - code as oce::mapPlotTest() for testing (always show 2-panel plots in tests)
 

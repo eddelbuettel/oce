@@ -4,6 +4,5 @@ all:$(patsubst %.R,%.out,$(wildcard *.R))
 clean:
 	@rm -f *~ *.png *.out
 view:
-	-open *png
-	-open *pdf
+	open *pdf
 
