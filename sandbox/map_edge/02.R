@@ -27,9 +27,14 @@ for (itheta in seq_along(thetas)) {
     points(x0+E$r * cos(theta), y0+E$r * sin(theta), col="red", pch=20)
     edger[itheta] <- E$r
 }
-edgex <- x0 + edger * cos(thetas)
-edgey <- y0 + edger * sin(thetas)
+edgex <- x0 + (1-tol/l)*edger * cos(thetas)
+edgey <- y0 + (1-tol/l)*edger * sin(thetas)
 polygon(edgex, edgey, col=rgb(1, 0, 0, alpha=0.05), border="red")
+
+ll <- map2lonlat(edgex, edgey)
+res <- data.frame(x=edgex, y=edgey, lon=ll$longitude, lat=ll$latitude)
+print(res)
+mapLines(res$lon, res$lat, col="blue", lty="dotted", lwd=2)
 
 # index near xy point
 near <- function(x, y) {

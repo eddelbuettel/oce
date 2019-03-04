@@ -1,3 +1,8 @@
+---
+title: the oce sandbox
+author: various oce developers
+---
+
 This directory is used by the developers, to explore ideas for oce enhancements
 in full view of users. However, nothing stored here enters the oce package,
 since this directory is named in the `.Rbuildignore` file.

@@ -21,7 +21,8 @@ click).
 * `02.R` scans along radial lines passing through centre of image. The code is
   a lot simpler. I still do not detect box edges, but that will be simple. The
 polygon for the earth is in transparent red, and the outline (with the dots
-that define it) is red.
+that define it) is red. Also, as a check on the transformation to lon-lat, the
+outline in that system is shown in a blue dotted line.
 
 **Next steps:**
 - trace box edges
