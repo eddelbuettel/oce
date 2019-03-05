@@ -28,13 +28,15 @@ outline in that system is shown in a blue dotted line.
   that this method holds some promise.
 
 * `04.R` checks with the whole world. All looks good, including our dear old
-  friend, Antarctica.
+  friend, Antarctica; see the right-hand panel of 04.pdf
+
+* `05.R` traces box border, if necessary
 
 **Next steps:**
 - [x] test the intersection (done in 03.R)
-- trace box edges
-- think about interrupted projections (maybe ignore for now)
-- code as oce::mapPlotTest() for testing (always show 2-panel plots in tests)
+- [ ] trace box border
+- [ ] think about interrupted projections (maybe ignore for now)
+- [ ] code as oce::mapPlotTest() for testing (always show 2-panel plots in tests)
 
 
 
