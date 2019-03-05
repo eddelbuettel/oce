@@ -86,7 +86,7 @@ for (iseg in 2:nnas) {
             }
         }
         if (!is.null(outlon)) {
-            polygon(outlon, outlat, col=rgb(0, 0, 0, alpha=0.1), border="green")
+            polygon(outlon, outlat, col=rgb(0, 0, 0, alpha=0.1), border="black")
         }
     }
 }
