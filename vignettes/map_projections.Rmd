@@ -24,13 +24,58 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-**Abstract.** FIXME: DK to write this
+**Abstract.** An overview of the handling of map projections in oce is
+presented, along with a few examples of common projections.
 
 # Introduction
 
-FIXME: DK to write this
+Map projections provide methods for representing the three-dimensional surface
+of the earth as two-dimensional plots.  Although most oceanographers are likely
+to be familiar with the basic ideas of map projection, they may find it helpful
+to consult the wide literature on this topic, whether to learn about the
+details of individual projections and to get advice on the best choice of
+projection for a particular task. Snyder (1987), Snyder (1993) and Snyder and
+Voxland (1994) are all excellent sources on these topics, and the first and
+last of these are available for free online.
 
-**Exercise 1.** a. FIXME: DK to write this
+Oce handles map projections by calling the \code{projection} function of the
+\code{rgdal} R package, and so the notation for representing the projection is
+borrowed from \code{rgdal}.  This system will be familiar to many readers,
+because it is used in other R packages, and more widely in the software called
+PROJ.4, 2019), which has interfaces in python and other programming languages
+(PROJ.4, 2019). Since oce uses inverse projections in some of its graphical
+work, only PROJ.4 projections that have inverses are incorporated into oce.
+Furthermore, some projections are omitted from oce because they have been
+witnessed to cause problems on the oce developer's computers, including
+infinite loops and core dumps. See the help for the oce function \code{mapPlot}
+for a list of the available projections, and some advice on choosing them.
 
+FIXME: I think that list of projections we have in \code{mapPlot} ought to go
+here, actually, so I just made an issue comment
+(https://github.com/dankelley/oce/issues/1504) to ask co-developers if they
+agree.
+
+
+
+# Exercises
+
+## **Exercise 1.** a. FIXME: DK to write this
+
+
+# References
+
+PROJ. PROJ.4 6.0.0 Documentation.” Accessed March 7, 2019.  https://proj4.org/.
+
+Snyder, John P. Map Projections—a Working Manual. Washington: U.S. Geological
+survey professional paper 1395, 1987. https://pubs.usgs.gov/pp/1395/report.pdf.
+
+Snyder, John Parr. Flattening the Earth: Two Thousand Years of Map Projections.
+Chicago, IL: University of Chicago Press, 1993.
+https://www.press.uchicago.edu/ucp/books/book/chicago/F/bo3632853.html.
+
+Snyder, John P., and Philip M. Voxland. “An Album of Map Projections.” U. S.
+Geological Survey Professional Paper. Washington, DC, USA: U. S. Department of
+the Interior: U. S. Geological Survey, 1994.
+https://pubs.er.usgs.gov/publication/pp1453.
 
 
