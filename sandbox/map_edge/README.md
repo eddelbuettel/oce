@@ -32,9 +32,15 @@ outline in that system is shown in a blue dotted line.
 
 * `05.R` traces box border, if necessary
 
+* `06.R` better tracing but problems if pole or dateline in view
+
+* `07.R` better on pole- and dateline-showing views. More tests. NOTE: if we
+  shift the lon_0 we can get missing Eurasia ... I never thought about that
+properly before.
+
 **Next steps:**
 - [x] test the intersection (done in 03.R)
-- [ ] trace box border
+- [x] trace box border
 - [ ] think about interrupted projections (maybe ignore for now)
 - [ ] code as oce::mapPlotTest() for testing (always show 2-panel plots in tests)
 
