@@ -49,7 +49,7 @@ projlist <- list(stereN="+proj=stere +lat_0=90",
                  orthoE100="+proj=ortho +lon_0=100",
                  orthoE120="+proj=ortho +lon_0=120",
                  orthoE140="+proj=ortho +lon_0=140",
-                 orthoE160="+proj=ortho +lon_0=160",# +lat_0=20",
+                 orthoE160="+proj=ortho +lon_0=160 +lat_0=20", # FIXME: N.Amer. missing
                  orthoE180="+proj=ortho +lon_0=180",
                  orthoW20="+proj=ortho +lon_0=-20",
                  orthoW40="+proj=ortho +lon_0=-40",
@@ -62,15 +62,16 @@ projlist <- list(stereN="+proj=stere +lat_0=90",
                  orthoW180="+proj=ortho +lon_0=-180",
                  robin="+proj=robin",
                  moll="+proj=moll",
-                 mollP100="+proj=moll +lon_0=100",
-                 mollM100="+proj=moll +lon_0=-100")
+                 mollE100="+proj=moll +lon_0=100", # errors
+                 mollW100="+proj=moll +lon_0=-100")
 namelist <- names(projlist)
 
 for(iproj in seq_along(projlist)) {
-    if ("orthoE160" != namelist[iproj])
-        next
+    ##if (!length(grep("ortho", namelist[iproj]))) next
+    ##if (!length(grep("stereN", namelist[iproj]))) next
     message(namelist[iproj])
-    if (!interactive()) pdf(paste("08_", names(projlist)[iproj], ".pdf", sep=""), pointsize=9)
+    if (!interactive())
+        pdf(paste("08_", names(projlist)[iproj], ".pdf", sep=""), height=3, pointsize=9)
     projection <- projlist[[iproj]]
     ## projection <- paste("+proj=", proj, " +lon_0=50", sep="")
     message("projection=\"",projection, "\"", sep="")
@@ -86,7 +87,7 @@ for(iproj in seq_along(projlist)) {
         cl <- coastlineWorld
     }
 
-    par(mfrow=c(2, 2), mar=c(1.5, 1.5, 0.5, 0.5), mgp=c(2, 0.7, 0))
+    par(mfrow=c(1, 3), mar=c(1.5, 1.5, 0.5, 0.5), mgp=c(2, 0.7, 0))
     if (closeup) {
         mapPlot(cl, projection=projection, col="gray",
                 longitudelim=c(0, 180), latitudelim=c(-90,90))
@@ -125,7 +126,8 @@ for(iproj in seq_along(projlist)) {
     N <- 128
     N <- 64
     ##N <- 32
-    thetas <- seq(0, 2*pi, length.out=N)
+    dtheta <- 2 * pi / N
+    thetas <- seq(0, 2*pi-dtheta, dtheta)
     R <- 10 * sqrt(lx^2 + ly^2) # make very long; we trim later
     edger <- rep(NA, N)
 
@@ -224,7 +226,14 @@ for(iproj in seq_along(projlist)) {
             WHp <- sp::Polygon(cbind(c(180, 180, 360, 360), c(-90, 90, 90, -90)))
             WHps <- sp::Polygons(list(WHp), "WHp")
             WHsps <- sp::SpatialPolygons(list(WHps))
-            ressps <- rgeos::gBuffer(ressps, width=0)
+            ##plot(ressps);box();axis(1);axis(2)
+            ##rgeos::gIsValid(ressps)
+            ##XY <- polygonsCoords(ressps)
+            ##plot(XY$y)
+            ## gBuffer() has been suggested as a way to avoid self-intersection,
+            ## but it yields weird results
+            #ressps2 <- rgeos::gBuffer(ressps, width=0)
+            #plot(ressps2)
             focusE <- raster::intersect(ressps, EHsps) # Eastern focus SpatialPolygons
             focusW <- raster::intersect(ressps, WHsps) # Western focus SpatialPolygons
             if (FALSE) { # shows that W needs to shift by -360 deg
@@ -266,7 +275,11 @@ for(iproj in seq_along(projlist)) {
             ##. focus <- sp::SpatialPolygons(list(sp::Polygons(list(focusW@polygons[[1]]@Polygons[[1]],
             ##.                                                     focusE@polygons[[1]]@Polygons[[1]]), "focus")))
             focus <- sp::SpatialPolygons(list(sp::Polygons(focusList, "focus")))
-            plot(focus, col=rgb(1,0,0,alpha=0.05), border="red");box();axis(1);axis(2);lines(lonlat$lon, lonlat$lat)
+            plot(focus, col=rgb(1,0,0,alpha=0.05), border="red")
+            box()
+            axis(1)
+            axis(2)
+            lines(lonlat$lon, lonlat$lat)
             ##> browser()
             ##> EWps <- sp::Polygons(list(Wp, Ep), "WEp")
             ##> focusRegion <- sp::SpatialPolygons(list(EWps))
@@ -285,22 +298,29 @@ for(iproj in seq_along(projlist)) {
         ##> polygon(res$lon, res$lat, col=rgb(1, 0, 0, alpha=0.05))
         ##> ##> browser()
         points(lonfix(res$lon[1:2]), res$lat[1:2], col=1:2)
+    } else {
+        ## Dateline is not visible, so we need a simpler focus
+        ## res <- data.frame(x=edgex, y=edgey, lon=ll$longitude, lat=ll$latitude)
+        focus <- xy2SpatialPolygons(res$lon, res$lat, name="focus")
+        plot(focus, col=rgb(1,0,0,alpha=0.05), border="red")
+        box()
+        axis(1)
+        axis(2)
+        lines(lonlat$lon, lonlat$lat)
     }
     northPole <- lonlat2map(0, 90)
-    if (sp::point.in.polygon(northPole$x, northPole$y, edgex, edgey)) {
+    northPoleInFocus <- sp::point.in.polygon(northPole$x, northPole$y, edgex, edgey)
+    if (northPoleInFocus) {
+        message("**adding the North pole**")
         o <- order(res$lon)
         res <- res[o, ]
-        message("**adding the North pole**")
         res <- as.list(res)
         res$x <- c(res$x[1], res$x[1], res$x, tail(res$x, 1), tail(res$x, 1))
         res$y <- c(northPole$y, res$y[1], res$y, tail(res$y, 1), northPole$y)
         ##res$lon <- c(res$lon[1], res$lon, tail(res$lon,1))
         res$lon <- c(-180, -180, res$lon, 180, 180)
         res$lat <- c(90, res$lat[1], res$lat, tail(res$lat, 1), 90)
-        res <- as.data.frame(res)
-        ##browser()
-        ##plot(res$lon, res$lat)
-        ##polygon(res$lon, res$lat)
+        focus <- xy2SpatialPolygons(res$lon, res$lat, name="focus")
     }
     ## mapLines(res$lon, res$lat, col="blue", lty="dotted", lwd=2)
     ## polygon(res$lon, res$lat, col="blue", lty="dotted", lwd=2)
