@@ -38,6 +38,10 @@ outline in that system is shown in a blue dotted line.
   shift the lon_0 we can get missing Eurasia ... I never thought about that
 properly before.
 
+* `08.R` try multi-polygon focus region (testing only on one projection so
+  far). Note that adding lat_0 breaks this code -- is it making more than 2
+regions, or am I doing things wrong?
+
 **Next steps:**
 - [x] test the intersection (done in 03.R)
 - [x] trace box border
