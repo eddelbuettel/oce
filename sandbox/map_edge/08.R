@@ -1,4 +1,6 @@
 rm(list=ls())
+DEBUG <- 1
+epsilon <- 0.01
 ## References
 ## https://cran.r-project.org/doc/contrib/intro-spatial-rl.pdf
 ## ?"plot,SpatialPolygons,missing-method"
@@ -69,6 +71,7 @@ namelist <- names(projlist)
 for(iproj in seq_along(projlist)) {
     ##if (!length(grep("ortho", namelist[iproj]))) next
     ##if (!length(grep("stereN", namelist[iproj]))) next
+    if (DEBUG==1 && namelist[iproj] != "mollE100") next
     message(namelist[iproj])
     if (!interactive())
         pdf(paste("08_", names(projlist)[iproj], ".pdf", sep=""), height=3, pointsize=9)
@@ -175,7 +178,7 @@ for(iproj in seq_along(projlist)) {
         points(x0+edge$r * cos(theta), y0+edge$r * sin(theta), col="pink", pch=20)
         ## NOTE: move a bit inside to avoid problems at horizon, e.g. with
         ## ortho that shows the dateline.
-        edger[itheta] <- edge$r * 0.99
+        edger[itheta] <- edge$r * (1 - epsilon)
     }
     ldiag <- sqrt(lx^2 + ly^2)
     edgex <- x0 + (1-tol/ldiag)*edger * cos(thetas)
@@ -187,9 +190,12 @@ for(iproj in seq_along(projlist)) {
 
     ## If a pole is in the bounding, we need to add endpoints so that
     ## the geometry catches locations poleward of the bounding region.
-    dateline <- lonlat2map(180, 0)
-    datelineInFocus <- sp::point.in.polygon(dateline$x, dateline$y, edgex, edgey)
+    dateline <- lonlat2map(rep(180, 19), seq(-90, 90, length.out=19))
+    datelineInFocus <- any(sp::point.in.polygon(dateline$x, dateline$y, edgex, edgey))
     message("datelineInFocus=", datelineInFocus)
+    northPole <- lonlat2map(0, 90)
+    northPoleInFocus <- sp::point.in.polygon(northPole$x, northPole$y, edgex, edgey)
+    message("northPoleInFocus=", northPoleInFocus)
     if (datelineInFocus) {
         mapPoints(180, 0, col="green")
         mapPoints(res$lon[1:2], res$lat[1:2], col=1:2)
@@ -234,14 +240,29 @@ for(iproj in seq_along(projlist)) {
             ## but it yields weird results
             #ressps2 <- rgeos::gBuffer(ressps, width=0)
             #plot(ressps2)
+            if (DEBUG==1) {
+                ##plot(ressps, col='lightgray')
+                plot(res$lon, res$lat, type="o")
+                points(res$lon[1:2], res$lat[1:2], col=1:2, pch=7, cex=2)
+                abline(v=180)
+                abline(v=360, col='red')
+                w<-which.max(abs(diff(res$lon)))
+                res$lon[w+seq(-1,1,1)]
+                median(abs(diff(res$lon)))
+                browser()
+                ##plot(res$lon, type="o")
+                ##points(res$lon[1:2], col=1:2, pch=7, cex=2)
+                ##plot(res$lat, type="o")
+                ##points(res$lat[1:2], col=1:2, pch=7, cex=2)
+            }
             focusE <- raster::intersect(ressps, EHsps) # Eastern focus SpatialPolygons
             focusW <- raster::intersect(ressps, WHsps) # Western focus SpatialPolygons
-            if (FALSE) { # shows that W needs to shift by -360 deg
+            if (FALSE) {               # shows that W needs to shift by -360 deg
                 plot(focusE);box();axis(1);axis(2)
                 plot(focusW);box();axis(1);axis(2)
             }
-            ## Shift the western polygon to negative longitude, to
-            ## match coastline convention.
+            ## Shift the western polygon to negative longitude, to match
+            ## coastline convention.
             tmp <- polygonsCoords(focusW)
             tmp$x <- tmp$x - 360
             focusW <- xy2SpatialPolygons(tmp$x, tmp$y, "a")
@@ -308,8 +329,6 @@ for(iproj in seq_along(projlist)) {
         axis(2)
         lines(lonlat$lon, lonlat$lat)
     }
-    northPole <- lonlat2map(0, 90)
-    northPoleInFocus <- sp::point.in.polygon(northPole$x, northPole$y, edgex, edgey)
     if (northPoleInFocus) {
         message("**adding the North pole**")
         o <- order(res$lon)
