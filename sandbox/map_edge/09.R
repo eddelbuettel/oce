@@ -6,6 +6,7 @@ rm(list=ls())
 datelineMethod1 <- FALSE
 closeup <- !TRUE
 showWork <- 0
+debug <- 2
 library(oce)
 data(coastlineWorld)
 ##cwr <- coastlineCut(coastlineWorld, -100)
@@ -62,14 +63,16 @@ projlist <- list(stereN="+proj=stere +lat_0=90",
                  orthoW180="+proj=ortho +lon_0=-180",
                  robin="+proj=robin",
                  moll="+proj=moll",
-                 mollE100="+proj=moll +lon_0=100", # errors
+                 mollE100="+proj=moll +lon_0=90", # errors
                  mollW100="+proj=moll +lon_0=-100")
 namelist <- names(projlist)
 
 for(iproj in seq_along(projlist)) {
     ##if (!length(grep("ortho", namelist[iproj]))) next
     ##if (!length(grep("stereN", namelist[iproj]))) next
-    if (!length(grep("robin$", namelist[iproj]))) next
+    ## if (!length(grep("robin$", namelist[iproj]))) next
+    ##if (!length(grep("mollE100$", namelist[iproj]))) next
+    if (!length(grep("orthoW100$", namelist[iproj]))) next
     message(namelist[iproj])
     if (!interactive())
         pdf(paste("09_", names(projlist)[iproj], ".pdf", sep=""), height=3, pointsize=9)
@@ -97,7 +100,7 @@ for(iproj in seq_along(projlist)) {
             mapPlot(cl, projection=projection, col="gray",
                     longitudelim=c(-130, 50), latitudelim=c(70, 110))
         } else {
-            mapPlot(cl, projection=projection, col="gray", debug=10)
+            mapPlot(cl, projection=projection, col="gray")
         }
     }
     xy <- lonlat2map(lonlat$lon, lonlat$lat)
@@ -216,6 +219,7 @@ for(iproj in seq_along(projlist)) {
             }
         } else {
             message("datelineMethod1=", datelineMethod1, " (multi-polygon scheme)")
+            browser()
             res$lon <- 360 + ifelse(res$lon > 0, res$lon-360, res$lon)
             resp <- sp::Polygon(cbind(res$lon, res$lat))
             resps <- sp::Polygons(list(resp), "resp")
@@ -235,8 +239,47 @@ for(iproj in seq_along(projlist)) {
             ## but it yields weird results
             #ressps2 <- rgeos::gBuffer(ressps, width=0)
             #plot(ressps2)
-            focusE <- raster::intersect(ressps, EHsps) # Eastern focus SpatialPolygons
-            focusW <- raster::intersect(ressps, WHsps) # Western focus SpatialPolygons
+            if (debug>1)
+                par(mfrow=c(3,2))
+            resxy <- polygonsCoords(ressps)
+            reslon <- resxy$x
+            reslat <- resxy$y
+            if (debug>1) {
+                plot(reslon, reslat, type="o")
+                points(reslon[1:2],reslat[1:2],col=1:2, pch=20, cex=2)
+                abline(v=100+180,col=2)
+            }
+            dreslon <- diff(reslon)
+            ##plot(dlon, type="o")
+            imax <- which.max(dreslon)
+            imin <- which.min(dreslon)
+            if (debug>1) {
+                plot(reslon[seq.int(1L,imax)], reslat[seq.int(1L,imax)], type="o")
+                points(reslon[1:2],reslat[1:2],col=1:2, pch=20, cex=2)
+                plot(reslon[seq.int(imax+1L,imin)]-360, reslat[seq.int(imax+1L,imin)], type="o")
+                points(reslon[imax+1:2]-360,reslat[imax+1:2],col=1:2, pch=20, cex=2)
+            }
+            nres <- length(reslon)
+            if (debug>1) {
+                plot(reslon[seq.int(imin+1L,nres)], reslat[seq.int(imin+1L,nres)], type="o")
+                points(reslon[imin+1:2],reslat[imin+1:2],col=1:2, pch=20, cex=2)
+            }
+            RESLON <- c(reslon[seq.int(1L, imax)],
+                        reslon[seq.int(imax+1L,imin)]-360,
+                        reslon[seq.int(imin+1L, nres)])
+            RESLAT <- c(reslat[seq.int(1L, imax)],
+                        reslat[seq.int(imax+1L,imin)],
+                        reslat[seq.int(imin+1L, nres)])
+            if (debug>1) {
+                plot(RESLON, RESLAT, type="o", xlim=c(-90, 360-90), ylim=c(-90,90))
+                abline(v=c(-90,360-90), col=2:3)
+                points(RESLON[1:2], RESLAT[1:2],col=1:2, pch=20, cex=2)
+            }
+            ressps2 <- xy2SpatialPolygons(RESLON, RESLAT, "ressps2")
+            browser()
+
+            focusE <- raster::intersect(ressps2, EHsps) # Eastern focus SpatialPolygons
+            focusW <- raster::intersect(ressps2, WHsps) # Western focus SpatialPolygons
             if (FALSE) { # shows that W needs to shift by -360 deg
                 plot(focusE);box();axis(1);axis(2)
                 plot(focusW);box();axis(1);axis(2)
@@ -281,17 +324,15 @@ for(iproj in seq_along(projlist)) {
             axis(1)
             axis(2)
             lines(lonlat$lon, lonlat$lat)
-            ##> browser()
-            ##> EWps <- sp::Polygons(list(Wp, Ep), "WEp")
-            ##> focusRegion <- sp::SpatialPolygons(list(EWps))
-            ##> plot(lonlat$lon, lonlat$lat, type="l", xlim=c(-185,185),ylim=c(-95, 95))
-            ##> plot(focusRegion, col=rgb(1,0,0,alpha=0.05), border="red", add=TRUE)
-            ##> plot(focusRegion)
-            ##> lines(lonlat$lon, lonlat$lat)
-            ##> box()
-            ##> axis(1)
-            ##> axis(2)
-            ##> browser()
+            ##EWps <- sp::Polygons(list(Wp, Ep), "WEp")
+            ##focusRegion <- sp::SpatialPolygons(list(EWps))
+            ##plot(lonlat$lon, lonlat$lat, type="l", xlim=c(-185,185),ylim=c(-95, 95))
+            ##plot(focusRegion, col=rgb(1,0,0,alpha=0.05), border="red", add=TRUE)
+            ##plot(focusRegion)
+            ##lines(lonlat$lon, lonlat$lat)
+            ##box()
+            ##axis(1)
+            ##axis(2)
         }
         ##> lines(res$lon, res$lat, type="o", col="red")
         ##> points(res$lon[1:2], res$lat[1:2], type="o", pch=20, col=1:2, cex=2)
