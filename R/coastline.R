@@ -1441,7 +1441,6 @@ coastlineCut <- function(coastline, lon_0=0)
             return(coastline)
         w <- coastlineTrim(coastline, west=-180, east=loncut-epsilon, south=-90, north=90)
         e <- coastlineTrim(coastline, west=loncut+epsilon, east=180, south=-90, north=90)
-        lonCombined <- c(w[["longitude"]], NA, e[["longitude"]])
         as.coastline(longitude=c(w[["longitude"]], NA, e[["longitude"]]),
                      latitude=c(w[["latitude"]], NA, e[["latitude"]]))
     }
@@ -1509,16 +1508,15 @@ coastlineTrim <- function(x, west=-180, east=180, south=-90, north=90, debug=get
     if (north <= south)
         stop("north=", north, " does not exceed south=", south)
     res <- x
-    NAendpoints <- function(x) {
-        if (!is.na(x[1]))
-            x <- c(NA, x)
-        if (!is.na(x[length(x)]))
-            x <- c(x, NA)
-        x
-    }
+    ##> NAendpoints <- function(x) {
+    ##>     if (!is.na(x[1]))
+    ##>         x <- c(NA, x)
+    ##>     if (!is.na(x[length(x)]))
+    ##>         x <- c(x, NA)
+    ##>     x
+    ##> }
     cllon <- x[["longitude"]]
     cllat <- x[["latitude"]]
-    norig <- length(cllon)
     box <- as(raster::extent(west, east, south, north), "SpatialPolygons")
     ##boxp <- sp::Polygon(cbind(c(west, west, east, east), c(south, north, north, south)))
     ##box <- sp::SpatialPolygons(list(boxp), 1L)
