@@ -1,6 +1,8 @@
 closeup <- !TRUE
 showWork <- 0
 library(oce)
+library(raster)
+library(sp)
 data(coastlineWorld)
 cwr <- coastlineCut(coastlineWorld, -100)
 

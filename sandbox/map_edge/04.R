@@ -1,4 +1,6 @@
 library(oce)
+library(raster)
+library(sp)
 data(coastlineWorld)
 if (!interactive()) pdf("04.pdf", height=4, pointsize=9)
 

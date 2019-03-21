@@ -1,5 +1,6 @@
 REAL <- !TRUE # to avoid having to click whilst writing code
 library(raster)
+library(sp)
 library(oce)
 ## install.packages("rgeos")
 

@@ -1,6 +1,8 @@
 closeup <- !TRUE
 showWork <- 0
 library(oce)
+library(raster)
+library(sp)
 data(coastlineWorld)
 
 lonlat <- list(lon=coastlineWorld[["longitude"]], lat=coastlineWorld[["latitude"]])

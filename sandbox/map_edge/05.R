@@ -2,6 +2,8 @@ closeup <- !TRUE
 showWork <- 0
 projection <- "+proj=ortho"
 library(oce)
+library(raster)
+library(sp)
 data(coastlineWorld)
 if (!interactive()) pdf("05.pdf", pointsize=9)
 
