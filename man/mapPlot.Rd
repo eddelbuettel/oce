@@ -392,7 +392,6 @@ wildly inaccurate in a Pacific Antarctic-Alaska application
 }
 
 \examples{
-#projectionsWork <- !(.Platform$OS.type=="windows"&&.Platform$r_arch=="i386")
 if (.Platform$OS.type != "windows") {
     library(oce)
     data(coastlineWorld)

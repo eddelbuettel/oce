@@ -613,15 +613,16 @@ mapAxis <- function(side=1:2, longitude=NULL, latitude=NULL,
 #' than in \code{\link{contour}}.
 #'
 #' @examples
-#'\donttest{
-#' library(oce)
-#' data(coastlineWorld)
-#' if (require(ocedata)) {
-#'     data(levitus, package="ocedata")
-#'     par(mar=rep(1, 4))
-#'     mapPlot(coastlineWorld, projection="+proj=robin", col="lightgray")
-#'     mapContour(levitus[['longitude']], levitus[['latitude']], levitus[['SST']])
-#' }
+#' if (.Platform$OS.type != "windows") {
+#'     if (require(ocedata)) {
+#'         library(oce)
+#'         data(coastlineWorld)
+#'         data(levitus, package="ocedata")
+#'         par(mar=rep(1, 4))
+#'         mapPlot(coastlineWorld, projection="+proj=robin", col="lightgray")
+#'         mapContour(levitus[['longitude']],
+#'                    levitus[['latitude']], levitus[['SST']])
+#'     }
 #'}
 #'
 #' @author Dan Kelley
@@ -1113,7 +1114,6 @@ mapLongitudeLatitudeXY <- function(longitude, latitude)
 #' projections (with graphs).
 #'
 #' @examples
-#' #projectionsWork <- !(.Platform$OS.type=="windows"&&.Platform$r_arch=="i386")
 #' if (.Platform$OS.type != "windows") {
 #'     library(oce)
 #'     data(coastlineWorld)
