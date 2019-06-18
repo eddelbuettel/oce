@@ -1,3 +1,7 @@
+doc
+_inst/doc
+sandbox
+_inst/sandbox
 *~
 *.swp
 *.nc
