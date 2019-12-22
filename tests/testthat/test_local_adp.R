@@ -1,16 +1,71 @@
 library(oce)
 context("read adp data")
 
-f <- "~/Dropbox/data/archive/sleiwex/2008/moorings/m07/adp/sontek_h53/raw/adp_sontek_h53.adp"
+f <- "~/data/archive/sleiwex/2008/moorings/m07/adp/sontek_h53/raw/adp_sontek_h53.adp"
 if (file.exists(f)) {
-    test_that("Sontek adp", {
+    test_that("Sontek pcadp full file (private data, only available to CR and DK)", {
               n <- 5000
-              adp <- read.oce(f, from=n+1, to=n+3)
+              ##OLD adp <- read.oce(f, from=n+1, to=n+3)
+              adp <- read.adp.sontek(f, type="pcadp", from=n+1, to=n+3)
               ## numeric time comparison is easier for these whacky times
               expect_equal(as.numeric(adp[["time"]])-1214438000,
                            c(0.5599999428, 10.6500000954, 20.6400001049))
 
-              v <- c(0.51, 0.51, 0.51, 0.756, 0.756, 0.756, 0.17, 0.17, 0.17,
+              v <- structure(c(-0.0978, -0.0686, -0.1154, -0.1054, -0.0764,
+                               -0.1215, -0.1173, -0.0872, 0.1218, 0.1223,
+                               -0.0939, 0.1172, 0.1186, -0.1005, 0.1131,
+                               0.1141, -0.1103, 0.1107, 0.1136, -0.1171,
+                               0.1063, 0.112, -0.1216, 0.1024, 0.1074, 0.1232,
+                               0.1041, 0.1048, 0.1207, 0.1061, 0.1013, 0.1191,
+                               0.1047, 0.0971, 0.1133, 0.1052, 0.098, 0.1102,
+                               0.1023, 0.0976, 0.1084, 0.1026, 0.0977, 0.106,
+                               0.1017, 0.0975, 0.103, 0.1029, 0.0998, 0.0996,
+                               0.1001, 0.1002, 0.0974, 0.0975, 0.0989, 0.0884,
+                               0.0947, 0.0951, 0.0866, 0.0887, 0.097, 0.0863,
+                               0.0855, 0.0952, 0.0607, 0.0831, 0.0982, 0.0656,
+                               0.0803, 0.0986, 0.0565, 0.0749, 0.0969, 0.0499,
+                               0.0713, 0.0972, 0.0462, 0.0714, 0.0959, 0.0466,
+                               0.0683, 0.0882, 0.0446, 0.0607, 0.0787, 0.044,
+                               0.0562, 0.0696, 0.0455, 0.0514, 0.0609, 0.0534,
+                               0.046, 0.0324, 0.0269, 0.0229, 0.0928, 0.1068,
+                               0.0335, 0.0716, 0.0877, 0.0222, 0.0592, 0.0698,
+                               0.0194, 0.0486, 0.0546, 0.0126, 0.0428, 0.0482,
+                               0.0068, 0.0401, 0.0469, 0.0024, 0.0365, 0.0394,
+                               0.0043, 0.0346, 0.0381, 2e-04, 0.0314, 0.0303,
+                               -0.0055, 0.0299, 0.0294, -0.0075, 0.0285,
+                               0.0263, -0.0057, 0.0271, 0.0312, -0.0049,
+                               0.0237, 0.033, -0.0015, 0.0201, 0.0328, 0.0015,
+                               0.0224, 0.0348, 0.0057, 0.0234, 0.0343, 0.0041,
+                               0.0219, 0.0344, 0.009, 0.0133, 0.0316, 0.0077,
+                               0.0155, 0.0076, 0.0116, 0.025, 0.0289, 0.0096,
+                               0.034, 0.0294, 0.0048, 0.031, 0.0268, 0.0077,
+                               0.0354, 0.0237, 0.0077, 0.0336, 0.0232, 0.0073,
+                               0.0349, 0.0204, -0.0019, 0.0365, 0.0262,
+                               -0.0077, 0.0302, 0.0136, 0.0013, 0.0139, 1e-04,
+                               -0.0139, 0.0308, -0.0022, 0.0016, 0.0249,
+                               -0.0045, -0.0043, 0.0317, -0.002, -0.004,
+                               0.0259, -3e-04, -0.0059, 0.0315, 0.0348, 0.0291,
+                               0.0182, 0.0221, 0.0156, 0.0084, 0.0131, 0.0045,
+                               0.0026, 0.0079, -0.001, -0.0048, 0.0031,
+                               -0.0061, -0.0075, -7e-04, -0.0102, -0.0142,
+                               -0.0086, -0.0123, -0.0184, -0.0107, -0.014,
+                               -0.017, -0.012, -0.0163, -0.0164, -0.0149,
+                               -0.0141, -0.0191, -0.0129, -0.0128, -0.0202,
+                               -0.0146, -0.0134, -0.0191, -0.0123, -0.0135,
+                               -0.0217, -0.0124, -0.0132, -0.0228, -0.0168,
+                               -0.0189, -0.0144, -0.0042, 0.0032, -0.0252,
+                               -0.0127, -0.0136, -0.0224, -0.0131, -0.0084,
+                               -0.0188, -0.019, -0.012, -0.0187, -0.0219,
+                               -0.0076, -0.0171, -0.0184, -0.0083, -0.0152,
+                               -0.0262, -0.0041, -0.0125, -0.0253, -0.0029,
+                               -0.009, -0.0167, -3e-04, -0.0109, -0.0162, 0,
+                               -0.0051, -0.0188, 0.0031, -0.0105, -0.0182,
+                               0.0073, -0.0179, -0.0171, 0.0027, -0.0197,
+                               -0.0116, -0.001, -0.0179, -0.0143, -0.0011,
+                               -0.0213, -0.0155, -0.0064, 0.0015, 0.0016,
+                               0.0014), .Dim = c(3L, 32L, 3L))
+
+              vOLD <- c(0.51, 0.51, 0.51, 0.756, 0.756, 0.756, 0.17, 0.17, 0.17,
                      0.1, 0.1, 0.1, 1.7, 1.7, 1.7, 0.227, 0.227, 0.227, 0.05,
                      0.05, 0.05, 1.5, 1.5, 1.5, 0.123, 0.123, 0.123, 0.123,
                      0.123, 0.123, 0.123, 0.123, 0.123, 0, 0, 0, 1.114, 1.435,
@@ -46,7 +101,6 @@ if (file.exists(f)) {
                      -0.107, -0.14, -0.17, -0.12, -0.163, -0.164, -0.149,
                      -0.141, -0.191, -0.129, -0.128, -0.202, -0.146, -0.134,
                      -0.191, -0.123, -0.135, -0.217, -0.124, -0.132)
-              dim(v) <- c(3, 32, 3)
               expect_equal(adp[["v"]], v)
               expect_equal(adp[["distance"]], c(0.05, 0.09, 0.13, 0.17, 0.21,
                                                 0.25, 0.29, 0.33, 0.37, 0.41,
@@ -59,7 +113,7 @@ if (file.exists(f)) {
 }
 
 
-test_that("Teledyn/RDI read (integer from,to) and check", {
+test_that("Teledyn/RDI read with integer from and to (data available in github clone, but not in CRAN)", {
           if (1 == length(list.files(path=".", pattern="local_data"))) {
               beam <- read.oce("local_data/adp_rdi",
                                from=1, to=10, latitude=47.88126, longitude=-69.73433)
@@ -78,7 +132,7 @@ test_that("Teledyn/RDI read (integer from,to) and check", {
           }
 })
 
-test_that("Teledyn/RDI read (POSIXct from,to)", {
+test_that("Teledyn/RDI read with POSIXct from and to (data available in github clone, but not in CRAN)", {
           if (1 == length(list.files(path=".", pattern="local_data"))) {
               beam <- read.oce("local_data/adp_rdi",
                                from=as.POSIXct("2008-06-25 10:01:00",tz="UTC"),
@@ -89,7 +143,7 @@ test_that("Teledyn/RDI read (POSIXct from,to)", {
           }
 })
 
-test_that("Teledyn/RDI binmap", {
+test_that("binmap with Teledyn/RDI (data available in github clone, but not in CRAN)", {
           if (1 == length(list.files(path=".", pattern="local_data"))) {
               beam <- read.oce("local_data/adp_rdi",
                                from=1, to=10, latitude=47.88126, longitude=-69.73433)
@@ -98,7 +152,7 @@ test_that("Teledyn/RDI binmap", {
           }
 })
 
-test_that("Nortek aquadopp read and check", {
+test_that("Nortek aquadopp (data available in github clone, but not in CRAN)", {
           if (1 == length(list.files(path=".", pattern="local_data"))) {
               beam <- read.oce("local_data/adp_nortek_aquadopp",
                                from=1, to=10, latitude=47.87943, longitude=-69.72533)
@@ -118,15 +172,18 @@ test_that("Nortek aquadopp read and check", {
           }
 })
 
-test_that("Sontek (PCADP)", {
+test_that("Sontek pcadp fragment (data available in github clone, but not in CRAN)", {
           if (1 == length(list.files(path=".", pattern="local_data"))) {
-              beam <- read.oce("local_data/adp_sontek",
-                               from=1, to=10, latitude=48.87961, longitude=-69.72706)
+              beam <- read.adp.sontek("local_data/adp_sontek",
+                               type="pcadp",
+                               from=1, to=10,
+                               latitude=48.87961, longitude=-69.72706)
               ##summary(beam)
               expect_equal(48.87961, beam[["latitude"]])
               expect_equal(-69.72706, beam[["longitude"]])
               expect_equal(dim(beam[["v"]]), c(10, 32, 3))
-              beam2 <- read.oce("local_data/adp_sontek",
+              beam2 <- read.adp.sontek("local_data/adp_sontek",
+                                type="pcadp",
                                 from=as.POSIXct("2008-06-25 10:00:40", tz="UTC"),
                                 to=as.POSIXct("2008-06-25 10:01:30", tz="UTC"),
                                 latitude=48.87961, longitude=-69.72706)
