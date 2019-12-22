@@ -194,10 +194,11 @@ approx3d <- function(x, y, z, f, xout, yout, zout)
 #' @param sep the separator between name and value
 argShow <- function(x, nshow=4, last=FALSE, sep="=")
 {
-    if (missing(x))
-        return("")
+    #if (missing(x))
+    #    return("")
     name <- paste(substitute(x))
     res <- ""
+    nx <- 1
     if (missing(x)) {
         res <- "(missing)"
     } else {

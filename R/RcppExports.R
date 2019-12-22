@@ -120,8 +120,8 @@ do_sfm_enu <- function(heading, pitch, roll, starboard, forward, mast) {
     .Call(`_oce_do_sfm_enu`, heading, pitch, roll, starboard, forward, mast)
 }
 
-do_ldc_sontek_adp <- function(buf, have_ctd, have_gps, have_bottom_track, pcadp, max) {
-    .Call(`_oce_do_ldc_sontek_adp`, buf, have_ctd, have_gps, have_bottom_track, pcadp, max)
+do_ldc_sontek_adp <- function(buf, have_ctd, have_gps, have_bottom_track, type, max) {
+    .Call(`_oce_do_ldc_sontek_adp`, buf, have_ctd, have_gps, have_bottom_track, type, max)
 }
 
 do_epic_time_to_ymdhms <- function(julianDay, millisecond) {

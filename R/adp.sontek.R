@@ -1,30 +1,49 @@
 ## vim: tw=120 shiftwidth=4 softtabstop=4 expandtab:
 
-#' Read a Sontek ADP File
+#' Read a SonTek ADP File
 #'
-#' Read a Sontek acoustic-Doppler profiler file (see reference 1).
+#' Read a SonTek acoustic-Doppler profiler file (see reference 1).
 #'
 #' @param despike if `TRUE`, [despike()] will be used to clean
 #' anomalous spikes in heading, etc.
 #'
-#' @param type A character string indicating the type of instrument.
+#' @param type optional character string indicating the type of instrument.
+#' The permitted values are `"adp"`, `"argonaut_adp"` and `"adcp"`. If not
+#' `type` is not provided, the first four bytes will be checked,
+#' with `"adp"` being inferred if the bytes are `0x10 0x02 0x60 0x00`
+#' and `"argonaut_adp"` being inferred if thy are `0x40 0x02 0x60 0x00`;
+#' note that `"pcadp"` files start with the same four bytes as `"adp"`
+#' files, so the user ought to specify `type` to distinguish between
+#' the two.
 #'
 #' @template adpTemplate
 #'
 #' @references
-#' 1. Information about Sontek profilers is available at https://www.sontek.com.
+#' 1. Information about SonTek instruments is available at https://www.sontek.com, but manuals are behind a login wall.
+#' 2. SonTek/YSI Incorporated. "ADP (Acoustic Doppler Profiler) Operation Manual Firmware Version 7.1." Sontek/YSI, March 2001.
+#' 3. SonTek/YSI Incorporated. "Argonaut Acoustic Doppler Current Meter Operation Manual Firmware Version 7.9."
+#'    SonTek/YSI, May 1, 2001.
+#'    https://eng.ucmerced.edu/snsjho/files/San_Joaquin/Sensors_and_Loggers/SonTek/SonTek_Argonaut/ArgonautXR.pdf
 #'
 #' @author Dan Kelley and Clark Richards
 #'
 #' @family things related to adp data
 read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
-                            longitude=NA, latitude=NA,
-                            type=c("adp", "pcadp"),
+                            longitude=NA, latitude=NA, type,
                             monitor=FALSE, despike=FALSE, processingLog,
                             debug=getOption("oceDebug"),
                             ...)
 {
-    if (!missing(file) && is.character(file) && 0 == file.info(file)$size)
+    oceDebug(debug, "read.adp.sontek(...,",
+             argShow(from),
+             argShow(to),
+             argShow(type),
+             "...) {\n", unindent=1, sep="", style="bold")
+    if (missing(file))
+        stop("must supply 'file'")
+    if (is.character(file) && !file.exists(file))
+        stop("cannot open '", file, "' because there is no such file or directory")
+    if (is.character(file) && 0 == file.info(file)$size)
         stop("empty file")
     missing.to <- missing(to)
     ## In this function, comments in [] refer to logical page number of ADPManual_v710.pd; add 14 for file page number
@@ -76,8 +95,7 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         oceDebug(debug, "result: t=", format(t), " at profileStart[", middle, "]=", profileStart[middle], "\n")
         return(list(index=middle, time=t)) # index is within vsd
     }
-    oceDebug(debug, "read.adp.sontek(...,from=", from, ",to=", if (missing.to) "(missing)" else to, ",by=", by, "type=", type, "...)\n")
-    ##parameters <- list(profile.byte1 = 0xa5, profile.byte2=0x10, profile.headerLength=80)
+   ##parameters <- list(profile.byte1 = 0xa5, profile.byte2=0x10, profile.headerLength=80)
     if (is.character(file)) {
         if (0 == file.info(file)$size)
             stop("empty file")
@@ -92,7 +110,6 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         open(file, "rb")
         on.exit(close(file))
     }
-    type <- match.arg(type)
     res <- new("adp")
     seek(file, 0, "end")
     fileSize <- seek(file, 0, "start")
@@ -101,9 +118,33 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
     ## See if there is a header here.  (May not be, since the file may have been chopped
     ## into parts by a deck unit.)
     frequency <- NA
-    if (buf[1] == 0x10 && buf[2] == 0x02 && 96 == readBin(buf[3:4], "integer", n=1, size=2, signed=FALSE, endian="little")) {
-        oceDebug(debug, "have a header, but ignoring it for now\n")
+    ## 0x10 is what we had for years; 0x40 is a test to try to read sontek/argonaut data.
+
+    ## Infer variety of file
+    if (missing(type)) {
+        adp.type <- if (buf[1] == 0x10 && buf[2] == 0x02 && buf[3] == 0x60 && buf[4] == 0x00) {
+            "adp"
+        } else if (buf[1] == 0x40 && buf[2] == 0x02 && buf[3] == 0x60 && buf[4] == 0x00) {
+            "argonaut_adp"
+        } else {
+            stop("can only auto-recognize \"adp\" and \"adp_argonaut\" SonTek file types; for \"pcadcp\", supply the 'type' argument")
+        }
+    }
+    typeAllowed <- c("adp", "argonaut_adp", "pcadp")
+    tmp <- pmatch(type, typeAllowed)
+    if (is.na(tmp))
+        stop("type=\"", adp.type, "\" is not permitted; it must be one of: \"", paste(typeAllowed, collapse='", "'), "\"")
+    adp.type <- typeAllowed[tmp]
+    rm(tmp)
+
+    ##if ((buf[1] == 0x10 || buf[1] == 0x40) && buf[2] == 0x02 && 96 == readBin(buf[3:4], "integer", n=1, size=2, signed=FALSE, endian="little")) {
+    if (adp.type == "adp") {
+        oceDebug(debug, "adp type ... scanning the header, but ignoring it for now\n")
         ## Comments like [p83] refer to logical page number of ADPManual_v710.pd; add 14 for file page number
+        bytesInConfiguration <- readBin(buf[3:4], "integer", n=1, size=2, endian="little")
+        if (bytesInConfiguration != 96)
+            warning("bytes 3:4 of the header suggest", bytesInConfiguration, "but this should be 96\n")
+        ## skip DateTimeType, which is 8 bytes long, in bytes 5:12
         cpuSoftwareVerNum <- as.integer(buf[13]) / 10 # CPUSoftwareVerNum [p83]
         dspSoftwareVerNum <- as.integer(buf[14]) / 10 # DSPSoftwareVerNum [p83]
         boardRev <- readBin(buf[15], "character", n=1, size=1, signed=TRUE) # BoardRev [p83]
@@ -128,6 +169,51 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         press.installed <- switch(as.integer(buf[35]) + 1, FALSE, TRUE) # nolint (variable not used)
         ## 36 = spare
         ## 37 int[16], so I guess 2-byte ints, signed?
+    } else if (adp.type == "argonaut_adp") {
+        message("NOTE: exported 'BUF' which is the full buffer, for code-development purposes. MUST remove later")
+        BUF <<- buf
+        ## See reference [2] print page 87, PDF page 99.
+        bytesInConfiguration <- readBin(buf[3:4], "integer", n=1, size=2, endian="little")
+        if (bytesInConfiguration != 96)
+            warning("bytes 3:4 of the header suggest", bytesInConfiguration, "but this should be 96\n")
+        ## skip DateTimeType, which is 8 bytes long, in bytes 5:12
+        cpuSoftwareVerNum <- as.integer(buf[13]) / 10 # CPUSoftwareVerNum [p83]
+        dspSoftwareVerNum <- as.integer(buf[14]) / 10 # DSPSoftwareVerNum [p83]
+        boardRev <- readBin(buf[15], "character", n=1, size=1, signed=TRUE) # BoardRev [p83]
+        serialNumber <- readBin(buf[16:25], "character")
+        oceDebug(debug, "serialNumber=", serialNumber, "\n")
+        systemTypeByte <- buf[26]
+        oceDebug(debug, "systemType bits: ", rawToBits(systemTypeByte), "\n")
+        lowNibble <- ifelse(rawToBits(systemTypeByte)[8:5] == "01", 1, 0)
+        highNibble <- ifelse(rawToBits(systemTypeByte)[4:1] == "01", 1, 0)
+        oceDebug(debug, vectorShow(lowNibble))
+        frequency <- if (all(lowNibble == c(0, 0, 0, 1))) 1.5 else if (all(lowNibble == c(0, 0, 0, 0))) 3 else stop("low nibble must be 0001 or 0000 but it is ", paste(lowNibble, collapse=""))
+        oceDebug(debug, "frequency=", frequency, "MHz\n")
+        oceDebug(debug, vectorShow(highNibble))
+        systemType <- if (all(highNibble == c(0, 0, 0, 0))) {
+            "MD"
+        } else if (all(highNibble == c(0, 0, 0, 1))) {
+            "XR"
+        } else if (all(highNibble == c(0, 0, 1, 0))) {
+            "SL"
+        } else stop("high nibble must be 0000, 0001 or 0010 but it is ", paste(highNibble, collapse=""))
+        oceDebug(debug, "systemType =", systemType, "\n")
+
+        ## FIXME: store type and freq
+        nbeams <- as.integer(buf[27])
+        oceDebug(debug, "nbeams=", nbeams, "\n")
+        beam.geometry <- as.integer(buf[28])
+        oceDebug(debug, "beam.geometry=", beam.geometry,
+                  "; 0 (2 beams); 1 (3 beams), 2 (4 beams with 1 vertical), 3 (4 beams, Janus)\n")
+        slant.angle <- readBin(buf[29:30], "integer", n=1, size=2, signed=FALSE) / 10
+        oceDebug(debug, "slant.angle=", slant.angle, "\n")
+        orientation <- switch(as.integer(buf[31]) + 1, "down", "up", "side")
+        oceDebug(debug, "orientation=", orientation, "\n")
+        compass.installed <- switch(as.integer(buf[32]) + 1, FALSE, TRUE) # nolint (variable not used)
+        recorder.installed <- switch(as.integer(buf[33]) + 1, FALSE, TRUE) # nolint (variable not used)
+        temp.installed <- switch(as.integer(buf[34]) + 1, FALSE, TRUE) # nolint (variable not used)
+        press.installed <- switch(as.integer(buf[35]) + 1, FALSE, TRUE) # nolint (variable not used)
+        ## FIXME: there are quite a few more things defined in the table, but we skip for now.
     } else {
         cpuSoftwareVerNum <- dspSoftwareVerNum <- boardRev <-
             adp.type <- nbeams <- slant.angle <- orientation <-
@@ -135,7 +221,9 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
     }
     ##profileStart <- .Call("match2bytes", buf, parameters$profile.byte1, parameters$profile.byte2, FALSE)
     ##profileStart <- .Call("ldc_sontek_adp", buf, 0, 0, 0, 1, -1) # no ctd, no gps, no bottom-track; pcadp; all data
-    profileStart <- do_ldc_sontek_adp(buf, 0, 0, 0, 1, -1) # no ctd, no gps, no bottom-track; pcadp; all data
+    adp.type.int <- if (adp.type == "adp") 0L else if (adp.type == "argonaut_adp") 1L else 0L ## FIXME: pcadp?
+    oceDebug(debug, vectorShow(adp.type.int))
+    profileStart <- do_ldc_sontek_adp(buf, 0, 0, 0, adp.type.int, -1) # no ctd, no gps, no bottom-track; pcadp; all data
 
     profileStart2 <- sort(c(profileStart, profileStart+1)) # use this to subset for 2-byte reads
     oceDebug(debug, "first 10 profileStart:", profileStart[1:10], "\n")
@@ -267,7 +355,7 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
     if (type == "pcadp") {
         nbeamMax <- 4                 # Max numberOfBeams, not actual number
         headerLength <- headerLength + 2 * (8 + nbeamMax) + 2 * nbeamMax + nbeamMax
-        ## Below is C code from Sontek, for pulse-coherent adp (2-byte little-endian
+        ## Below is C code from SonTek, for pulse-coherent adp (2-byte little-endian
         ## integers).  FIXME: should perhaps read these things, but this is not a
         ## high priority, since in the data file for which the code was originally
         ## developed, all distances were set to 123 mm and all velocities to
@@ -416,9 +504,9 @@ sontek.time <- function(t, tz=getOption("oceTz"))
     ISOdatetime(year, month, day, hour, minute, second+milliseconds/1000, tz=tz)
 }
 
-#' Read a serial Sontek ADP file
+#' Read a serial SonTek ADP file
 #'
-#' Read a Sontek acoustic-Doppler profiler file, in a serial form that
+#' Read a SonTek acoustic-Doppler profiler file, in a serial form that
 #' is possibly unique to Dalhousie University.
 #'
 #' @param beamAngle angle between instrument axis and beams, in degrees.
@@ -537,7 +625,7 @@ read.adp.sontek.serial <- function(file, from=1, to, by=1, tz=getOption("oceTz")
         buf <- readBin(file, what="raw", n=fileSize, endian="little")
     }
     ##p <- .Call("ldc_sontek_adp", buf, 0, 0, 0, 0, -1) # no ctd, no gps, no bottom-track; all data
-    p <- do_ldc_sontek_adp(buf, 0, 0, 0, 0, -1) # no ctd, no gps, no bottom-track; all data
+    p <- do_ldc_sontek_adp(buf, 0, 0, 0, adp.type.int, -1) # no ctd, no gps, no bottom-track; all data
     ## read some unchanging things from the first profile only
     serialNumber <- paste(readBin(buf[p[1]+4:13], "character", n=10, size=1), collapse="")
     numberOfBeams <- readBin(buf[p[1]+26], "integer", n=1, size=1, signed=FALSE)

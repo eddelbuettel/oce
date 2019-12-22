@@ -389,8 +389,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // do_ldc_sontek_adp
-IntegerVector do_ldc_sontek_adp(RawVector buf, IntegerVector have_ctd, IntegerVector have_gps, IntegerVector have_bottom_track, IntegerVector pcadp, IntegerVector max);
-RcppExport SEXP _oce_do_ldc_sontek_adp(SEXP bufSEXP, SEXP have_ctdSEXP, SEXP have_gpsSEXP, SEXP have_bottom_trackSEXP, SEXP pcadpSEXP, SEXP maxSEXP) {
+IntegerVector do_ldc_sontek_adp(RawVector buf, IntegerVector have_ctd, IntegerVector have_gps, IntegerVector have_bottom_track, IntegerVector type, IntegerVector max);
+RcppExport SEXP _oce_do_ldc_sontek_adp(SEXP bufSEXP, SEXP have_ctdSEXP, SEXP have_gpsSEXP, SEXP have_bottom_trackSEXP, SEXP typeSEXP, SEXP maxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -398,9 +398,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type have_ctd(have_ctdSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type have_gps(have_gpsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type have_bottom_track(have_bottom_trackSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type pcadp(pcadpSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type type(typeSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type max(maxSEXP);
-    rcpp_result_gen = Rcpp::wrap(do_ldc_sontek_adp(buf, have_ctd, have_gps, have_bottom_track, pcadp, max));
+    rcpp_result_gen = Rcpp::wrap(do_ldc_sontek_adp(buf, have_ctd, have_gps, have_bottom_track, type, max));
     return rcpp_result_gen;
 END_RCPP
 }

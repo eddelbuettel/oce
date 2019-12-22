@@ -1854,12 +1854,14 @@ oceMagic <- function(file, debug=getOption("oceDebug"))
         return("echosounder")
     }
     if (bytes[1] == 0x10 && bytes[2] == 0x02) {
-        ## 'ADPManual v710.pdf' p83
+        ## See ?read.adp.sontek reference 2, print page 83 (pdf page 97)
         if (96 == readBin(bytes[3:4], "integer", n=1, size=2, endian="little"))
-            oceDebug(debug, "this is adp/sontek (4 byte match)\n  }\n")
-        else
-            oceDebug(debug, "this is adp/sontek (2 byte match, but bytes 3 and 4 should become integer 96)\n  }\n")
-        return("adp/sontek")
+            return("adp/sontek") # no way to distinguish between adp and adpcp based on these 4 bytes
+    }
+    if (bytes[1] == 0x40 && bytes[2] == 0x02) {
+        ## See ?read.adp.sontek reference 3, print page 87 (pdf page 99)
+        if (96 == readBin(bytes[3:4], "integer", n=1, size=2, endian="little"))
+            return("argonaut_adp/sontek")
     }
     if (bytes[1] == 0x7f && bytes[2] == 0x7f) {
         oceDebug(debug, "this is adp/rdi\n  }\n")
@@ -2051,7 +2053,9 @@ read.oce <- function(file, ...)
     } else if (type == "adp/rdi") {
         res <- read.adp.rdi(file, processingLog=processingLog, ...)
     } else if (type == "adp/sontek") {
-        res <- read.adp.sontek(file, processingLog=processingLog, ...) # FIXME is pcadcp different?
+        res <- read.adp.sontek(file, processingLog=processingLog, type="adp", ...) # FIXME is pcadcp different?
+    } else if (type == "argonaut_adp/sontek") {
+        res <- read.adp.sontek(file, processingLog=processingLog, type="argonaut_adp", ...)
     } else if (type == "adp/nortek/aquadopp") {
         res <- read.aquadopp(file, processingLog=processingLog, ...)
     } else if (type == "adp/nortek/aquadoppProfiler") {

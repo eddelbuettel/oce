@@ -2,7 +2,7 @@
 % Please edit documentation in R/adp.sontek.R
 \name{read.adp.sontek.serial}
 \alias{read.adp.sontek.serial}
-\title{Read a serial Sontek ADP file}
+\title{Read a serial SonTek ADP file}
 \usage{
 read.adp.sontek.serial(
   file,
@@ -81,7 +81,7 @@ NMEA strings, then navigational data will be stored in an item
 called \code{nmea} in the \code{data} slot).
 }
 \description{
-Read a Sontek acoustic-Doppler profiler file, in a serial form that
+Read a SonTek acoustic-Doppler profiler file, in a serial form that
 is possibly unique to Dalhousie University.
 }
 \seealso{

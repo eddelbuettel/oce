@@ -2,7 +2,7 @@
 % Please edit documentation in R/adp.sontek.R
 \name{read.adp.sontek}
 \alias{read.adp.sontek}
-\title{Read a Sontek ADP File}
+\title{Read a SonTek ADP File}
 \usage{
 read.adp.sontek(
   file,
@@ -12,7 +12,7 @@ read.adp.sontek(
   tz = getOption("oceTz"),
   longitude = NA,
   latitude = NA,
-  type = c("adp", "pcadp"),
+  type,
   monitor = FALSE,
   despike = FALSE,
   processingLog,
@@ -51,7 +51,14 @@ East.}
 \item{latitude}{optional signed number indicating the latitude in degrees
 North.}
 
-\item{type}{A character string indicating the type of instrument.}
+\item{type}{optional character string indicating the type of instrument.
+The permitted values are \code{"adp"}, \code{"argonaut_adp"} and \code{"adcp"}. If not
+\code{type} is not provided, the first four bytes will be checked,
+with \code{"adp"} being inferred if the bytes are \verb{0x10 0x02 0x60 0x00}
+and \code{"argonaut_adp"} being inferred if thy are \verb{0x40 0x02 0x60 0x00};
+note that \code{"pcadp"} files start with the same four bytes as \code{"adp"}
+files, so the user ought to specify \code{type} to distinguish between
+the two.}
 
 \item{monitor}{boolean, set to \code{TRUE} to provide an indication of progress
 in reading the file, either by printing a dot for each profile or by writing
@@ -77,11 +84,15 @@ NMEA strings, then navigational data will be stored in an item
 called \code{nmea} in the \code{data} slot).
 }
 \description{
-Read a Sontek acoustic-Doppler profiler file (see reference 1).
+Read a SonTek acoustic-Doppler profiler file (see reference 1).
 }
 \references{
 \enumerate{
-\item Information about Sontek profilers is available at https://www.sontek.com.
+\item Information about SonTek instruments is available at https://www.sontek.com, but manuals are behind a login wall.
+\item SonTek/YSI Incorporated. "ADP (Acoustic Doppler Profiler) Operation Manual Firmware Version 7.1." Sontek/YSI, March 2001.
+\item SonTek/YSI Incorporated. "Argonaut Acoustic Doppler Current Meter Operation Manual Firmware Version 7.9."
+SonTek/YSI, May 1, 2001.
+https://eng.ucmerced.edu/snsjho/files/San_Joaquin/Sensors_and_Loggers/SonTek/SonTek_Argonaut/ArgonautXR.pdf
 }
 }
 \seealso{
