@@ -173,6 +173,7 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
     } else if (type == "argonaut_adp") {
         ##>>DEVELOPER<< message("NOTE: exported 'BUF' which is the full buffer, for code-development purposes. MUST remove later")
         ##>>DEVELOPER<< BUF <<- buf
+        BUF<<-buf
         ## See reference [2] print page 87, PDF page 99.
         bytesInConfiguration <- readBin(buf[3:4], "integer", n=1, size=2, endian="little")
         if (bytesInConfiguration != 96)
