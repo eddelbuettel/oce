@@ -76,8 +76,7 @@ IntegerVector do_ldc_sontek_adp(RawVector buf,
   unsigned char adpByte2 = 0x10;
   unsigned char adpByte3 = 0x50; // decimal 80 (number of bytes in header)
   unsigned char argonautLongByte1 = 0xB0;
-  //unsigned char argonautLongByte2 = 0x26; // ADP decimal 38 (number of bytes in header)
-  unsigned char argonautLongByte2 = 0xa1; // decimal 161 (seen in a particular file)
+  unsigned char argonautLongByte2 = 0x26; // ADP decimal 38 (number of bytes in header)
   unsigned char argonautShortByte1 = 0xB1;
   unsigned char argonautShortByte2 = 0x16; // decimal 22 (number of bytes in header)
   if (have_ctd[0] != 0)
