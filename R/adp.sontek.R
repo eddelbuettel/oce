@@ -125,7 +125,9 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
     if (missing(type)) {
         type <- if (buf[1] == 0x10 && buf[2] == 0x02 && buf[3] == 0x60 && buf[4] == 0x00) {
             "adp"
-        } else if (buf[1] == 0x40 && buf[2] == 0x02 && buf[3] == 0x60 && buf[4] == 0x00) {
+        } else if (buf[1] == 0x40 && buf[2] == 0x02 && buf[3] == 0x60) {
+            ## argonaut has 0x40, 0x20 as.raw(96)=0x60
+            oceDebug(debug, "read.adp.sontek() recognized argonaut_adp type\n")
             "argonaut_adp"
         } else {
             stop("can only auto-recognize \"adp\" and \"adp_argonaut\" SonTek file types; for \"pcadcp\", supply the 'type' argument")
@@ -133,7 +135,7 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
     }
     typeAllowed <- c("adp", "argonaut_adp", "pcadp")
     tmp <- pmatch(type, typeAllowed)
-    oceDebug(debug, "after checking within file (if 'type' not given), infer type='", type, "'\n", sep="", style="red")
+    oceDebug(debug, "after checking within file (if 'type' not given), infer type='", type, "'\n", sep="")
     if (is.na(tmp))
         stop("type=\"", type, "\" is not permitted; it must be one of: \"", paste(typeAllowed, collapse='", "'), "\"")
     type <- typeAllowed[tmp]
@@ -234,8 +236,11 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         stop("'type' must be \"adp\", \"argonaut_adp\" or \"pcadp\", but it is \"", type, "\"")
     }
     oceDebug(debug, vectorShow(type.int))
-    profileStart <- do_ldc_sontek_adp(buf, 0L, 0L, 0L, as.integer(type.int), -1L) # no ctd, no gps, no bottom-track; pcadp; all data
-
+    if (type == "argonaut_adp") {
+        profileStart <- do_ldc_sontek_argonaut(buf, -1L)
+    } else {
+        profileStart <- do_ldc_sontek_adp(buf, 0L, 0L, 0L, as.integer(type.int), -1L) # no ctd, no gps, no bottom-track; pcadp; all data
+    }
     profileStart2 <- sort(c(profileStart, profileStart+1)) # use this to subset for 2-byte reads
     oceDebug(debug, "first 10 profileStart:", profileStart[1:10], "\n")
     oceDebug(debug, "first 100 bytes of first profile:", paste(buf[profileStart[1]:(99+profileStart[1])], collapse=" "), "\n")

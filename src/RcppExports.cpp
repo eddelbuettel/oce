@@ -404,6 +404,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// do_ldc_sontek_argonaut
+IntegerVector do_ldc_sontek_argonaut(RawVector buf, IntegerVector max);
+RcppExport SEXP _oce_do_ldc_sontek_argonaut(SEXP bufSEXP, SEXP maxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< RawVector >::type buf(bufSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type max(maxSEXP);
+    rcpp_result_gen = Rcpp::wrap(do_ldc_sontek_argonaut(buf, max));
+    return rcpp_result_gen;
+END_RCPP
+}
 // do_epic_time_to_ymdhms
 List do_epic_time_to_ymdhms(IntegerVector julianDay, IntegerVector millisecond);
 RcppExport SEXP _oce_do_epic_time_to_ymdhms(SEXP julianDaySEXP, SEXP millisecondSEXP) {

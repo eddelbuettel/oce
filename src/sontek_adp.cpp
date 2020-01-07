@@ -12,7 +12,7 @@ using namespace Rcpp;
 
 // Limit for the extent of debugging output in each stage of the
 // processing.
-#define MESSAGE_LIMIT 20
+#define MESSAGE_LIMIT 100
 
 // Cross-reference work:
 // 1. update ../src/registerDynamicSymbol.c with an item for this
@@ -75,10 +75,6 @@ IntegerVector do_ldc_sontek_adp(RawVector buf,
   unsigned char adpByte1 = 0xA5;
   unsigned char adpByte2 = 0x10;
   unsigned char adpByte3 = 0x50; // decimal 80 (number of bytes in header)
-  unsigned char argonautLongByte1 = 0xB0;
-  unsigned char argonautLongByte2 = 0x26; // ADP decimal 38 (number of bytes in header)
-  unsigned char argonautShortByte1 = 0xB1;
-  unsigned char argonautShortByte2 = 0x16; // decimal 22 (number of bytes in header)
   if (have_ctd[0] != 0)
     ::Rf_error("cannot read SonTek ADP files with CTD data");
   if (have_bottom_track[0] != 0)
@@ -97,11 +93,10 @@ IntegerVector do_ldc_sontek_adp(RawVector buf,
   /* scan first profile to determine ncell and nbeam */
   int first_look = 2000;
   if (first_look > nbuf)
-    ::Rf_error("cannot read Sontek ADP from a buffer with fewer than 100 bytes");
+    ::Rf_error("cannot read Sontek ADP from a buffer with fewer than 2000 bytes");
   int i;
   int ncell = -1, nbeam = -1;
   imessage = 0;
-  max_messages = MESSAGE_LIMIT;
   for (i = 0; i < first_look - 3; i++) { /* note that we don't look to the very end */
     //Rprintf(" %d: %x %x %x (%x %x %x)\n", i, buf[i], buf[i+1], buf[i+2], adpByte1, adpByte2, adpByte3);
     if ((is_adp || is_pcadp) && buf[i] == adpByte1 && buf[i+1] == adpByte2 && buf[i+2] == adpByte3) {
@@ -117,22 +112,9 @@ IntegerVector do_ldc_sontek_adp(RawVector buf,
       if (ncell < 1)
         ::Rf_error("number of cells cannot be less than 1, but it is %d", ncell);
       break;
-    } else if (is_argonaut_adp && buf[i] == argonautShortByte1 && buf[i+1] == argonautShortByte2) {
-#ifdef DEBUG
-      if (imessage++ < max_messages)
-        Rprintf("tentative first-profile argonaut_adp short record at i=%d (message %d/%d)\n",
-            i, imessage, max_messages);
-#endif
-    } else if (is_argonaut_adp && buf[i] == argonautLongByte1 && buf[i+1] == argonautLongByte2) {
-#ifdef DEBUG
-      if (imessage++ < max_messages)
-        Rprintf("tentative first-profile argonaut_adp long record at i=%d (message %d/%d)\n",
-            i, imessage, max_messages);
-#endif
     }
   }
   imessage = 0;
-  max_messages = MESSAGE_LIMIT;
   if ((is_adp || is_pcadp) && (nbeam < 0 || ncell < 0))
     ::Rf_error("cannot determine #beams or #cells, based on first 1000 bytes in buffer");
   // The next line envisions more data streams, e.g. ctd.
@@ -172,69 +154,10 @@ IntegerVector do_ldc_sontek_adp(RawVector buf,
         if (bad++ > maxbad)
           ::Rf_error("bad=%d exceeds maxbad=%d\n", bad, maxbad);
       }
-    } else if (is_argonaut_adp && buf[i] == argonautShortByte1 && buf[i+1] == argonautShortByte2) {
-#ifdef DEBUG
-      if (imessage++ < max_messages)
-        ::Rprintf("adp short record at i=%d FIXME: CODE checksum calc (message %d/%d)\n",
-            i, imessage, max_messages);
-#endif
-    } else if (is_argonaut_adp && buf[i] == argonautLongByte1 && buf[i+1] == argonautLongByte2) {
-      chunk_length = 161; // FIXME: this might work in a test file (just exploring with this code)
-      unsigned short int check_sum = check_sum_start; // RHS is fixed
-      //unsigned short int desired_check_sum = (unsigned short int)buf[i+chunk_length-1];
-      unsigned char desired_check_sum = (unsigned char)buf[i+chunk_length-1];
-      for (int c = 0; c < chunk_length; c++) {
-        //check_sum += (unsigned short int)buf[i + c];
-        check_sum += (unsigned char)buf[i + c];
-        if (bad < maxbad)
-          Rprintf("    i=%d c=%d buf[%d]=0x%02x check_sum=0x%04x 0x%02x\n",
-              i, c, i+c, buf[i+c], (unsigned short int)check_sum, (unsigned char)check_sum);
-      }
-      if ((unsigned char)check_sum == desired_check_sum) {
-        matches++;
-#ifdef DEBUG
-        if (imessage++ < max_messages)
-          Rprintf("OK  argonaut-long record at buf[%d]: check_sum=0x%02x (should be 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x) (message %d/%d)\n",
-              i, (unsigned char)check_sum, //desired_check_sum,
-              (unsigned short int)buf[i+chunk_length-3],
-              (unsigned short int)buf[i+chunk_length-2],
-              (unsigned short int)buf[i+chunk_length-1],
-              (unsigned short int)buf[i+chunk_length],
-              (unsigned short int)buf[i+chunk_length+1],
-              (unsigned short int)buf[i+chunk_length+2],
-              (unsigned short int)buf[i+chunk_length+3],
-              imessage, max_messages);
-#endif
-        if (max[0] != 0 && matches >= (unsigned int)max[0])
-          break;
-      } else {
-#ifdef DEBUG
-        if (imessage++ < max_messages)
-          Rprintf("BAD argonaut-long record at buf[%d]: check_sum=0x%02x (should be 0x%02x 0x%02x ?0x%02x 0x%02x 0x%02x 0x%02x 0x%02x) (message %d/%d)\n",
-              i, (unsigned char)check_sum, //desired_check_sum,
-              (unsigned short int)buf[i+chunk_length-3],
-              (unsigned short int)buf[i+chunk_length-2],
-              (unsigned short int)buf[i+chunk_length-1],
-              (unsigned short int)buf[i+chunk_length],
-              (unsigned short int)buf[i+chunk_length+1],
-              (unsigned short int)buf[i+chunk_length+2],
-              (unsigned short int)buf[i+chunk_length+3],
-              imessage, max_messages);
-#endif
-        if (bad++ > maxbad)
-          ::Rf_error("bad=%d exceeds maxbad=%d\n", bad, maxbad);
-      }
-    } else if (is_argonaut_adp && buf[i] == argonautShortByte1 && buf[i+1] == argonautShortByte2) {
-#ifdef DEBUG
-        if (imessage++ < max_messages)
-          Rprintf("Skipping (not checksumming) possible argonaut-short record at buf[%d] (message %d/%d)\n",
-              i, imessage, max_messages);
-#endif
     }
   }
   /* allocate space, then run through whole buffer again, noting the matches */
   imessage = 0;
-  max_messages = MESSAGE_LIMIT;
   unsigned int nres = matches;
   IntegerVector res(nres>0?nres:1, 1);
   if (nres > 0) {
@@ -252,18 +175,6 @@ IntegerVector do_ldc_sontek_adp(RawVector buf,
           res[ires++] = i + 1; /* the +1 is to get R pointers */
         if (ires > nres)        /* FIXME: or +1? */
           break;
-      } else if (is_argonaut_adp && buf[i] == argonautShortByte1 && buf[i+1] == argonautShortByte2) {
-#ifdef DEBUG
-        if (imessage++ < max_messages)
-          ::Rprintf("adp short record at i=%d -- getting space (message %d/%d)\n",
-              i, imessage, max_messages);
-#endif
-      } else if (is_argonaut_adp && buf[i] == argonautLongByte1 && buf[i+1] == argonautLongByte2) {
-#ifdef DEBUG
-        if (imessage++ < max_messages)
-          ::Rprintf("adp long record at i=%d -- getting space (message %d/%d)\n",
-              i, imessage, max_messages);
-#endif
       }
     }
     return(res);
@@ -275,3 +186,59 @@ IntegerVector do_ldc_sontek_adp(RawVector buf,
   }
   return(res);
 }
+
+// Cross-reference work:
+// 1. update ../src/registerDynamicSymbol.c with an item for this
+// 2. main code should use the autogenerated wrapper in ../R/RcppExports.R
+//
+// [[Rcpp::export]]
+IntegerVector do_ldc_sontek_argonaut(RawVector buf, IntegerVector max)
+{
+  unsigned int imessage = 0, max_messages = MESSAGE_LIMIT;
+
+  // 1. SonTek/YSI Incorporated. "Argonaut Acoustic Doppler Current Meter
+  // Operation Manual Firmware Version 7.9." SonTek/YSI, May 1, 2001.
+  // https://eng.ucmerced.edu/snsjho/files/San_Joaquin/Sensors_and_Loggers/SonTek/SonTek_Argonaut/ArgonautXR.pdf.
+  unsigned char argonautLongByte1 = 0xB0;
+  unsigned char argonautLongByte2 = 0x26; // ADP decimal 38 (number of bytes in header)
+  unsigned char argonautShortByte1 = 0xB1;
+  unsigned char argonautShortByte2 = 0x16; // decimal 22 (number of bytes in header)
+  int nbuf = buf.size();
+#ifdef DEBUG
+  Rprintf("buffer length nbuf=%d; argument max=%d\n", nbuf, max[0]);
+#endif
+  /* Count matches, so we can allocate the right length */
+  unsigned int matches = 0;
+  unsigned short int check_sum_start = ((unsigned short)0xa5<<8)  | ((unsigned short)0x96); /* manual p96 says 0xA596; assume little-endian */
+  if (max[0] < 0)
+    max[0] = 0;
+  /* scan first profile to determine ncell and nbeam */
+  int first_look = 10000;
+  if (first_look > nbuf)
+    ::Rf_error("cannot read Sontek argonaut from a buffer with fewer than 2000 bytes");
+  imessage = 0;
+#ifdef DEBUG
+  Rprintf("about to look at %d bytes at the start of the buffer\n", first_look);
+#endif
+  for (int i = 0; i < first_look - 3; i++) { /* note that we don't look to the very end */
+    //Rprintf(" %d: %x %x %x (%x %x %x)\n", i, buf[i], buf[i+1], buf[i+2], adpByte1, adpByte2, adpByte3);
+    if (buf[i] == argonautShortByte1) {
+#ifdef DEBUG
+      if (imessage++ < max_messages)
+        Rprintf("tentative argonaut_adp short record (message %4d/%4d) buf[- %6d +]=0x%02x 0x%02x 0x%02x (0x%02x?)\n",
+            imessage, max_messages, i, buf[i-1], buf[i], buf[i+1], argonautShortByte2);
+#endif
+    } else if (buf[i] == argonautLongByte1) {
+#ifdef DEBUG
+      if (imessage++ < max_messages)
+        Rprintf("tentative argonaut_adp long  record (message %4d/%4d) buf[- %6d +]=0x%02x 0x%02x 0x%02x (0x%02x?)\n",
+            imessage, max_messages, i, buf[i-1], buf[i], buf[i+1], argonautLongByte2);
+#endif
+    }
+  }
+  imessage = 0;
+  int max_beams = 4;
+  IntegerVector res(1, 1); // FIXME
+  return(res);
+} // do_ldc_sontek_argonaut(RawVector buf, IntegerVector max)
+
