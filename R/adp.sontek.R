@@ -152,20 +152,20 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         dspSoftwareVerNum <- as.integer(buf[14]) / 10 # DSPSoftwareVerNum [p83]
         boardRev <- readBin(buf[15], "character", n=1, size=1, signed=TRUE) # BoardRev [p83]
         serialNumber <- readBin(buf[16:25], "character")
-        oceDebug(debug, vectorShow(serialNumber, postscript=" [expect E5131 for issue 1637]"))
+        oceDebug(debug, vectorShow(serialNumber))
         frequencyIndex  <- readBin(buf[26], what="integer", n=1, size=1) # 0-3; 1=1.5; 2-750; 3-500 [p83]
-        oceDebug(debug, "frequencyIndex=", frequencyIndex, "\n", style="bold")
+        oceDebug(debug, vectorShow(frequencyIndex))
         frequency <- switch(frequencyIndex + 1, 3000, 1500, 750, 500, 250)
-        oceDebug(debug, "frequency=", frequency, "\n")
+        oceDebug(debug, vectorShow(frequency))
         nbeams <- as.integer(buf[27])
-        oceDebug(debug, "nbeams=", nbeams, "\n")
+        oceDebug(debug, vectorShow(nbeams))
         beam.geometry <- as.integer(buf[28])
-        oceDebug(debug, "beam.geometry=", beam.geometry,
-                  "; 0 (2 beams); 1 (3 beams), 2 (4 beams with 1 vertical), 3 (4 beams, Janus)\n")
+        oceDebug(debug, vectorShow(beam.geometry,
+                  postscript="0 (2 beams); 1 (3 beams), 2 (4 beams with 1 vertical), 3 (4 beams, Janus)"))
         slant.angle <- readBin(buf[29:30], "integer", n=1, size=2, signed=FALSE) / 10
-        oceDebug(debug, "slant.angle=", slant.angle, "\n")
+        oceDebug(debug, vectorShow(slant.angle))
         orientation <- switch(as.integer(buf[31]) + 1, "down", "up", "side")
-        oceDebug(debug, "orientation=", orientation, "\n")
+        oceDebug(debug, vectorShow(orientation))
         compass.installed <- switch(as.integer(buf[32]) + 1, FALSE, TRUE) # nolint (variable not used)
         recorder.installed <- switch(as.integer(buf[33]) + 1, FALSE, TRUE) # nolint (variable not used)
         temp.installed <- switch(as.integer(buf[34]) + 1, FALSE, TRUE) # nolint (variable not used)
@@ -173,9 +173,8 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         ## 36 = spare
         ## 37 int[16], so I guess 2-byte ints, signed?
     } else if (type == "argonaut_adp") {
-        ##>>DEVELOPER<< message("NOTE: exported 'BUF' which is the full buffer, for code-development purposes. MUST remove later")
-        ##>>DEVELOPER<< BUF <<- buf
         ## See reference [2] print page 87, PDF page 99.
+        oceDebug(debug, "about to read 'Argonaut sensor configuration structure' (96 bytes)\n", style="red")
         bytesInConfiguration <- readBin(buf[3:4], "integer", n=1, size=2, endian="little")
         if (bytesInConfiguration != 96)
             warning("bytes 3:4 of the header suggest", bytesInConfiguration, "but this should be 96\n")
@@ -184,15 +183,14 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         dspSoftwareVerNum <- as.integer(buf[14]) / 10 # DSPSoftwareVerNum [p83]
         boardRev <- readBin(buf[15], "character", n=1, size=1, signed=TRUE) # BoardRev [p83]
         serialNumber <- readBin(buf[16:25], "character")
-        DAN<<-serialNumber
-        oceDebug(debug, vectorShow(serialNumber, postscript=" [expect 11 for issue 1637]"))
+        oceDebug(debug, vectorShow(serialNumber, postscript=" [expect E5131 for issue 1637]"))
         systemTypeByte <- buf[26]
         oceDebug(debug, "systemType bits: ", rawToBits(systemTypeByte), "\n")
         lowNibble <- ifelse(rawToBits(systemTypeByte)[8:5] == "01", 1, 0)
         highNibble <- ifelse(rawToBits(systemTypeByte)[4:1] == "01", 1, 0)
         oceDebug(debug, vectorShow(lowNibble))
         frequency <- if (all(lowNibble == c(0, 0, 0, 1))) 1.5 else if (all(lowNibble == c(0, 0, 0, 0))) 3 else stop("low nibble must be 0001 or 0000 but it is ", paste(lowNibble, collapse=""))
-        oceDebug(debug, "frequency=", frequency, "MHz\n")
+        oceDebug(debug, vectorShow(frequency, postscript=" MHz"))
         oceDebug(debug, vectorShow(highNibble))
         systemType <- if (all(highNibble == c(0, 0, 0, 0))) {
             "MD"
@@ -201,26 +199,27 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         } else if (all(highNibble == c(0, 0, 1, 0))) {
             "SL"
         } else stop("high nibble must be 0000, 0001 or 0010 but it is ", paste(highNibble, collapse=""))
-        oceDebug(debug, "systemType =", systemType, "\n")
+        oceDebug(debug, vectorShow(systemType))
 
         ## FIXME: store type and freq
         nbeams <- as.integer(buf[27])
-        oceDebug(debug, "nbeams=", nbeams, "\n")
+        oceDebug(debug, vectorShow(nbeams))
         beam.geometry <- as.integer(buf[28])
-        oceDebug(debug, "beam.geometry=", beam.geometry,
-                  "; 0 (2 beams); 1 (3 beams), 2 (4 beams with 1 vertical), 3 (4 beams, Janus)\n")
+        oceDebug(debug, vectorShow(beam.geometry,
+                  postscript="; 0 (2 beams); 1 (3 beams), 2 (4 beams with 1 vertical), 3 (4 beams, Janus)"))
         slant.angle <- readBin(buf[29:30], "integer", n=1, size=2, signed=FALSE) / 10
-        oceDebug(debug, "slant.angle=", slant.angle, "\n")
+        oceDebug(debug, vectorShow(slant.angle))
         orientation <- switch(as.integer(buf[31]) + 1, "down", "up", "side")
-        oceDebug(debug, "orientation=", orientation, "\n")
+        oceDebug(debug, vectorShow(orientation))
         compass.installed <- switch(as.integer(buf[32]) + 1, FALSE, TRUE) # nolint (variable not used)
         recorder.installed <- switch(as.integer(buf[33]) + 1, FALSE, TRUE) # nolint (variable not used)
         temp.installed <- switch(as.integer(buf[34]) + 1, FALSE, TRUE) # nolint (variable not used)
         press.installed <- switch(as.integer(buf[35]) + 1, FALSE, TRUE) # nolint (variable not used)
+        oceDebug(debug, "skipping several things in 'Argonaut sensor configuration structure'\n")
         ## FIXME: there are quite a few more things defined in the table, but we skip for now.
         if (buf[97] == 0x41 && buf[98] == 0x02) {
             off <- 96
-            oceDebug(debug, "about to read have 'Argonaut operation configuration structure' (64 bytes)\n", style="red")
+            oceDebug(debug, "about to read 'Argonaut operation configuration structure' (64 bytes)\n", style="red")
             nbytes <- readBin(buf[99:100], "integer", size=2, endian="little")
             if (nbytes != 64)
                 warning("'Argonaut operation configuration structure' nbytes should be 64 but it is", nbytes, "\n")
