@@ -452,12 +452,15 @@ unduplicateNames <- function(strings, style=1)
 }
 
 
-#' Rename items in the data slot of an oce object
+#' Rename items in the data slot of an oce object (**deprecated**)
 #'
-#' This function may be used to rename elements within the
-#' `data` slot of `oce` objects. It also updates
-#' the processing log of the returned object, indicating
-#' the changes.
+#' This was deprecatd in December 2019, because [oceRenameData()] does
+#' a better job and is more consistent with other functions that work
+#' with items in the `data` and `metadata` slots.
+## This function may be used to rename elements within the
+## `data` slot of `oce` objects. It also updates
+## the processing log of the returned object, indicating
+## the changes.
 #'
 #' @param x an [oce-class] object.
 #'
@@ -465,14 +468,15 @@ unduplicateNames <- function(strings, style=1)
 #'
 #' @param new Vector of strings, containing old names.
 #'
-#' @examples
-#' data(ctd)
-#' new <- renameData(ctd, "temperature", "temperature68")
-#' new <- oceSetData(new, name="temperature",
-#'                   value=T90fromT68(new[["temperature68"]]),
-#'                   unit=list(unit=expression(degree*C),scale="ITS=90"))
+## @examples
+## data(ctd)
+## new <- renameData(ctd, "temperature", "temperature68")
+## new <- oceSetData(new, name="temperature",
+##                   value=T90fromT68(new[["temperature68"]]),
+##                   unit=list(unit=expression(degree*C),scale="ITS=90"))
 renameData <- function(x, old=NULL, new=NULL)
 {
+    .Deprecated("oceRenameData", msg="Superceded by oceRenameData(), as of December 2019")
     if (is.null(old)) stop("need to supply old")
     if (is.null(new)) stop("need to supply new")
     n <- length(old)
@@ -2244,12 +2248,22 @@ oce.spectrum <- oceSpectrum
 #' @author Dan Kelley
 vectorShow <- function(v, msg=NULL, digits=5, n=2L)
 {
+    DIM <- dim(v)
     nv <- length(v)
     if (is.null(msg))
         msg <- deparse(substitute(v))
     if (is.null(msg))
         msg <- ""
-    if (nchar(msg) && !grepl(":", msg)) {
+    if (!is.null(DIM)) {
+        msg <- paste(msg,
+                     paste("[",
+                           paste(unlist(lapply(DIM, function(x) paste("1:",x,sep=""))),collapse=", "),
+                           "]",
+                           sep=""))
+    } else if (nv > 1) {
+        msg <- paste(msg, paste("[1:", nv, "]", sep=""))
+    }
+    if (nchar(msg) && !grepl(":$", msg)) {
         msg <- paste0(msg, ": ")
     }
     if (nv == 0) {
@@ -2263,21 +2277,18 @@ vectorShow <- function(v, msg=NULL, digits=5, n=2L)
         }
         if (is.numeric(v)) {
             if (showAll) {
-                paste(msg, paste(format(v, digits=digits), collapse=", "),
-                      if (nv > 1) paste(" (length ", nv, ")\n", sep="") else "\n", sep="")
+                paste(msg, paste(format(v, digits=digits), collapse=", "), "\n", sep="")
             } else {
                 paste(msg, paste(format(v[1:n], digits=digits), collapse=", "),
                       ", ..., ", paste(format(v[nv-seq.int(n-1, 0)], digits=digits), collapse=", "),
-                      if (nv > 1) paste(" (length ", nv, ")\n", sep="") else "\n", sep="")
+                      "\n", sep="")
             }
         } else {
             if (showAll) {
-                paste(msg, paste(v, collapse=", "),
-                      if (nv > 1) paste(" (length ", nv, ")\n", sep="") else "\n", sep="")
+                paste(msg, paste(v, collapse=", "), "\n", sep="")
             } else {
                 paste(msg, paste(v[1:n], collapse=", "),
-                      ", ..., ", paste(v[nv-seq.int(n-1, 0)], collapse=", "),
-                      if (nv > 1) paste(" (length ", nv, ")\n", sep="") else "\n", sep="")
+                      ", ..., ", paste(v[nv-seq.int(n-1, 0)], collapse=", "), "\n", sep="")
             }
         }
     }
@@ -2355,7 +2366,7 @@ resizableLabel <- function(item, axis="x", sep, unit=NULL, debug=getOption("oceD
     oceDebug(debug, "resizableLabel(item=\"", item,
              "\", axis=\"", axis,
              "\", sep=\"", if (missing(sep)) "(missing)" else sep, "\", ...) {\n",
-            sep="", unindent=1)
+            sep="", unindent=1, style="bold")
     if (missing(item))
         stop("must provide 'item'")
     if (axis != "x" && axis != "y")
@@ -2634,7 +2645,7 @@ resizableLabel <- function(item, axis="x", sep, unit=NULL, debug=getOption("oceD
     ##cat("fraction=", fraction, "\n")
     #print(full)
     #print(abbreviated)
-    oceDebug(debug, "} # resizableLabel\n", unindent=1)
+    oceDebug(debug, "} # resizableLabel\n", unindent=1, style="bold")
     if (fraction < 1) full else abbreviated
 }
 
