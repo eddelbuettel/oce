@@ -152,7 +152,7 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         dspSoftwareVerNum <- as.integer(buf[14]) / 10 # DSPSoftwareVerNum [p83]
         boardRev <- readBin(buf[15], "character", n=1, size=1, signed=TRUE) # BoardRev [p83]
         serialNumber <- readBin(buf[16:25], "character")
-        oceDebug(debug, "serialNumber=", serialNumber, " [expect E5131 for issue 1637]\n")
+        oceDebug(debug, vectorShow(serialNumber, postscript=" [expect E5131 for issue 1637]"))
         frequencyIndex  <- readBin(buf[26], what="integer", n=1, size=1) # 0-3; 1=1.5; 2-750; 3-500 [p83]
         oceDebug(debug, "frequencyIndex=", frequencyIndex, "\n", style="bold")
         frequency <- switch(frequencyIndex + 1, 3000, 1500, 750, 500, 250)
@@ -184,7 +184,8 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         dspSoftwareVerNum <- as.integer(buf[14]) / 10 # DSPSoftwareVerNum [p83]
         boardRev <- readBin(buf[15], "character", n=1, size=1, signed=TRUE) # BoardRev [p83]
         serialNumber <- readBin(buf[16:25], "character")
-        oceDebug(debug, "serialNumber=", serialNumber, "[expect 11 for issue 1637]\n")
+        DAN<<-serialNumber
+        oceDebug(debug, vectorShow(serialNumber, postscript=" [expect 11 for issue 1637]"))
         systemTypeByte <- buf[26]
         oceDebug(debug, "systemType bits: ", rawToBits(systemTypeByte), "\n")
         lowNibble <- ifelse(rawToBits(systemTypeByte)[8:5] == "01", 1, 0)
@@ -256,14 +257,14 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
             ## 51    unsigned char MaxLevelPressDiff
             ## 52    char LevelOffset;
             ## 53    char ProfilingMode;
-            ProfilingMode <- buf[off+53]
-            oceDebug(debug, vectorShow(ProfilingMode), "       (0=no, 1=yes) [expect 1 for issue 1637]\n")
+            ProfilingMode <- as.integer(buf[off+53])
+            oceDebug(debug, vectorShow(ProfilingMode, postscript=" (0=no, 1=yes) [expect 1 for issue 1637]"))
             ## 54    char Ncells;
             Ncells <- as.integer(buf[off+54])
-            oceDebug(debug, vectorShow(Ncells), "     [expect 11 for issue 1637]\n")
+            oceDebug(debug, vectorShow(Ncells, postscript=" [expect 11 for issue 1637]"))
             ## 55:56 int CellSize;
             CellSize <- readBin(buf[off+55:56], "integer", size=2, signed=TRUE, endian="little")
-            oceDebug(debug, vectorShow(CellSize), "        (cm) [expect 350 for issue 1637]\n")
+            oceDebug(debug, vectorShow(CellSize, postscript=" (cm) [expect 350 for issue 1637]"))
             ## 57     char     SdiFormat;
             ## 58:63  char     Spare[6];
             ## 64     char     DebugOn;
