@@ -240,7 +240,7 @@ IntegerVector do_ldc_sontek_argonaut(RawVector buf, IntegerVector max)
 #ifdef DEBUG
   Rprintf("about to look at %d bytes at the start of the buffer\n", first_look);
 #endif
-  for (int i = 0; i < first_look - 3; i++) { /* note that we don't look to the very end */
+  for (int i = 0; i < nbuf - 3; i++) { /* note that we don't look to the very end */
     //Rprintf(" %d: %x %x %x (%x %x %x)\n", i, buf[i], buf[i+1], buf[i+2], adpByte1, adpByte2, adpByte3);
     if (buf[i] == argonautShortByte1) {
 #ifdef DEBUG
