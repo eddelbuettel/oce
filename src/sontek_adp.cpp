@@ -12,7 +12,7 @@ using namespace Rcpp;
 
 // Limit for the extent of debugging output in each stage of the
 // processing.
-#define MESSAGE_LIMIT 100
+#define MESSAGE_LIMIT 10
 
 // Cross-reference work:
 // 1. update ../src/registerDynamicSymbol.c with an item for this

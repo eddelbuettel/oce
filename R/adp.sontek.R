@@ -152,7 +152,7 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         dspSoftwareVerNum <- as.integer(buf[14]) / 10 # DSPSoftwareVerNum [p83]
         boardRev <- readBin(buf[15], "character", n=1, size=1, signed=TRUE) # BoardRev [p83]
         serialNumber <- readBin(buf[16:25], "character")
-        oceDebug(debug, "serialNumber=", serialNumber, "\n")
+        oceDebug(debug, "serialNumber=", serialNumber, " [expect E5131 for issue 1637]\n")
         frequencyIndex  <- readBin(buf[26], what="integer", n=1, size=1) # 0-3; 1=1.5; 2-750; 3-500 [p83]
         oceDebug(debug, "frequencyIndex=", frequencyIndex, "\n", style="bold")
         frequency <- switch(frequencyIndex + 1, 3000, 1500, 750, 500, 250)
@@ -184,7 +184,7 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         dspSoftwareVerNum <- as.integer(buf[14]) / 10 # DSPSoftwareVerNum [p83]
         boardRev <- readBin(buf[15], "character", n=1, size=1, signed=TRUE) # BoardRev [p83]
         serialNumber <- readBin(buf[16:25], "character")
-        oceDebug(debug, "serialNumber=", serialNumber, "\n")
+        oceDebug(debug, "serialNumber=", serialNumber, "[expect 11 for issue 1637]\n")
         systemTypeByte <- buf[26]
         oceDebug(debug, "systemType bits: ", rawToBits(systemTypeByte), "\n")
         lowNibble <- ifelse(rawToBits(systemTypeByte)[8:5] == "01", 1, 0)
@@ -217,6 +217,61 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         temp.installed <- switch(as.integer(buf[34]) + 1, FALSE, TRUE) # nolint (variable not used)
         press.installed <- switch(as.integer(buf[35]) + 1, FALSE, TRUE) # nolint (variable not used)
         ## FIXME: there are quite a few more things defined in the table, but we skip for now.
+        if (buf[97] == 0x41 && buf[98] == 0x02) {
+            off <- 96
+            oceDebug(debug, "about to read have 'Argonaut operation configuration structure' (64 bytes)\n", style="red")
+            nbytes <- readBin(buf[99:100], "integer", size=2, endian="little")
+            if (nbytes != 64)
+                warning("'Argonaut operation configuration structure' nbytes should be 64 but it is", nbytes, "\n")
+            ##     1 char ConfigType;
+            ##     2 char ConfigVer;
+            ##   3:4 int Nbytes;
+            ##  5:12 DateTimeType ConfigTime;
+            ## 13:14 int NpingsPerBeam;
+            NpingsPerBeam <- readBin(buf[off+13:14], "integer", size=2, endian="little")
+            oceDebug(debug, vectorShow(NpingsPerBeam))
+            ## 15:16 int SampInterval;
+            SampInterval <- readBin(buf[off+15:16], "integer", size=2, endian="little")
+            oceDebug(debug, vectorShow(SampInterval))
+            ## 17:18 int Lag;
+            Lag <- readBin(buf[off+17:18], "integer", size=2, endian="little")
+            oceDebug(debug, vectorShow(Lag))
+            ## 19:20 int PulseLength;
+            ## 21:22 int RecLength;
+            ## 23:24 int MinBlankLength;
+            ## 25:26 int OperatingRange;
+            ## 27:28 int PingDelay;
+            ## 29:30 int AutoFilter;
+            ## 30:33 int FilterA[2];
+            ## 34:37 int FilterB[2];
+            ## 38    char ModemMode;
+            ## 39:40 int TempOffset;
+            ## 41:42 int TempScale;
+            ## (next, assume that MAX_BEAMS is 4)
+            ## 43:46 unsigned char NominalNoise[MAX_BEAMS];
+            ## 48    unsigned char VelRangeInd;
+            ## 48    char FastMode;
+            ## 49    char SampleRecordMode;
+            ## 50    char UseCompassFlux;
+            ## 51    unsigned char MaxLevelPressDiff
+            ## 52    char LevelOffset;
+            ## 53    char ProfilingMode;
+            ProfilingMode <- buf[off+53]
+            oceDebug(debug, vectorShow(ProfilingMode), "       (0=no, 1=yes) [expect 1 for issue 1637]\n")
+            ## 54    char Ncells;
+            Ncells <- as.integer(buf[off+54])
+            oceDebug(debug, vectorShow(Ncells), "     [expect 11 for issue 1637]\n")
+            ## 55:56 int CellSize;
+            CellSize <- readBin(buf[off+55:56], "integer", size=2, signed=TRUE, endian="little")
+            oceDebug(debug, vectorShow(CellSize), "        (cm) [expect 350 for issue 1637]\n")
+            ## 57     char     SdiFormat;
+            ## 58:63  char     Spare[6];
+            ## 64     char     DebugOn;
+        } else {
+            warning("Argonaut operation configuration structure (64 bytes) not found; expected 0x41 0x02 0x40 but got",
+                    " 0x", buf[97], " 0x", buf[98], " 0x", buf[99], sep="")
+        }
+
     } else {
         cpuSoftwareVerNum <- dspSoftwareVerNum <- boardRev <-
             type <- nbeams <- slant.angle <- orientation <-
