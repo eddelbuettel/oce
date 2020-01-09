@@ -200,7 +200,10 @@ char *test_message = "# R test on a particular argonaut file, based on byte pair
 "length(short2) # 10, clearly wrong for a 3Mb file\n"
 "# How many 0xB0 0x26 (long) records, according to Sontek doc on such?\n"
 "long1 <- which(buf == as.raw(0xB0))\n"
-"long2 <- which(buf[short1 + 1] == as.raw(0x26))\n"
+"plot(long1[-1],diff(long1),ylim=c(160,162),cex=1/2)\n"
+"plot(long1[-1],diff(long1),ylim=c(160,162),cex=1/2)\n"
+"plot(long1[1:100],diff(long1)[1:100],ylim=c(160,162),cex=1/2)\n"
+"long2 <- which(buf[long1 + 1] == as.raw(0x26))\n"
 "length(long2) # 0, clearly wrong for a 3Mb file\n";
 
 

@@ -185,7 +185,7 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         ## 36 = spare
         ## 37 int[16], so I guess 2-byte ints, signed?
     } else if (type == "argonaut_adp") {
-        bufEXPORT<<-buf;message("exported bufEXPORT")
+        ## bufEXPORT<<-buf;message("exported bufEXPORT")
         ## See reference [2] print page 87, PDF page 99.
         oceDebug(debug, "about to read 'Argonaut sensor configuration structure' (96 bytes)\n", style="red")
         bytesInConfiguration <- readBin(buf[3:4], "integer", n=1, size=2, endian="little")
@@ -221,7 +221,7 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         oceDebug(debug, vectorShow(nbeams))
         beam.geometry <- as.integer(buf[28])
         oceDebug(debug, vectorShow(beam.geometry,
-                  postscript="; 0 (2 beams); 1 (3 beams), 2 (4 beams with 1 vertical), 3 (4 beams, Janus)"))
+                  postscript="  (0 means 2 beams; 1 means 3 beams; 2 means 4 beams w/ 1 vert.; 3 means 4 beams, Janus)"))
         slant.angle <- readBin(buf[29:30], "integer", n=1, size=2, signed=FALSE) / 10
         oceDebug(debug, vectorShow(slant.angle))
         orientation <- switch(as.integer(buf[31]) + 1, "down", "up", "side")
@@ -235,7 +235,7 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         off <- 96
         oceDebug(debug, "about to see if we have 'Argonaut operation configuration structure' (64 bytes)\n")
         if (buf[off+1] == 0x41 && buf[off+2] == 0x02) {
-            oceDebug(debug, "found 2-byte preface to 'Argonaut operation configuration structure' (64 bytes)\n", style="red")
+            oceDebug(debug, "found 'Argonaut operation configuration structure' (64 bytes)\n", style="red")
             ##     1 char ConfigType;
             ##     2 char ConfigVer;
             ##   3:4 int Nbytes;
@@ -280,35 +280,46 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
             Ncells <- as.integer(buf[off+54])
             oceDebug(debug, vectorShow(Ncells, postscript=" [expect 11 for issue 1637]"))
             ## 55:56 int CellSize;
-            CellSize <- readBin(buf[off+55:56], "integer", size=2, signed=TRUE, endian="little")
-            oceDebug(debug, vectorShow(CellSize, postscript=" (cm) [expect 350 for issue 1637]"))
+            CellSize <- readBin(buf[off+55:56], "integer", size=2, endian="little")
+            oceDebug(debug, vectorShow(CellSize, postscript=" (cm) [expect 350 for issue 1637] NB appears twice"), style="blue")
             ## 57     char     SdiFormat;
+            SdiFormat <- as.integer(buf[off+57])
+            oceDebug(debug, vectorShow(SdiFormat, postscript=" (0=Sontek, 1=Sidekick)"))
             ## 58:63  char     Spare[6];
             ## 64     char     DebugOn;
             off <- off + 64
             oceDebug(debug, "about to check for a 'User setup parameters structure' (258 bytes)\n")
             if (buf[off+1] == 0x42 && buf[off+2] == 0x02) {
-                oceDebug(debug, "found 'User setup configuration structure' (258 bytes)\n", style="red")
+                oceDebug(debug, "found 'User setup parameters structure' (258 bytes)\n", style="red")
                 ## User setup parameters structure (258 bytes)
                 ## 1       unsigned char ConfigType; 0x42
                 ## 2       unsigned char ConfigVer;  0x02
                 ## 3:4     unsigned int Nbytes;      258
-                nbytes <- readBin(buf[off+3:4], "integer", size=2, signed=FALSE, endian="little")
+                nbytes <- readBin(buf[off+3:4], "integer", size=2, signed=TRUE, endian="little")
                 if (nbytes != 258)
                     stop("'Argonaut operation configuration structure' nbytes should be 258 but it is ", nbytes, "\n")
                 ## 5:12    DateTimeType ConfigTime;
                 ConfigTime <- sontekDateTime(buf[off+5:12])
+                time_setup<<-buf[off+5:12]
                 oceDebug(debug, vectorShow(ConfigTime))
                 ## 13:14   int Temp;
+                Temp <- 0.01 * readBin(buf[off+13:14], "integer", size=2, signed=TRUE, endian="little")
+                oceDebug(debug, vectorShow(Temp, postscript=" (degC) [expect ?? for issue 1637]"))
                 ## 15:16   int Sal;
+                Sal <- 0.01 * readBin(buf[off+15:16], "integer", size=2, signed=TRUE, endian="little")
+                oceDebug(debug, vectorShow(Sal, postscript=" (ppt) [expect ?? for issue 1637]"))
                 ## 17:18   int Cw;
+                Cw <- 0.1 * readBin(buf[off+17:18], "integer", size=2, signed=TRUE, endian="little")
+                oceDebug(debug, vectorShow(Cw, postscript=" (m/s) [expect ?? for issue 1637]"))
                 ## 19:20   unsigned int BlankDistance;
                 BlankDistance <- readBin(buf[off+19:20], "integer", size=2, signed=FALSE, endian="little")
                 oceDebug(debug, vectorShow(BlankDistance, postscript=" cm [expect ?? for issue 1637]"))
                 ## 21:22   unsigned int PulseLength;
+                PulseLength  <- readBin(buf[off+21:22], "integer", size=2, signed=FALSE, endian="little")
+                oceDebug(debug, vectorShow(PulseLength , postscript=" cm [expect ?? for issue 1637]"))
                 ## 23:24   unsigned int CellSize;
                 CellSize <- readBin(buf[off+23:24], "integer", size=2, signed=FALSE, endian="little")
-                oceDebug(debug, vectorShow(CellSize, postscript=" cm [expect 350 for issue 1637]"))
+                oceDebug(debug, vectorShow(CellSize, postscript=" cm [expect 350 for issue 1637] NB appears twice"), style="blue")
                 ## 25      char TempMode;
                 ## 26:29   long AvgInterval;
                 ## 30:33   long SampleInterval;
@@ -316,7 +327,11 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
                 ## 36:37   unsigned int BurstMode;
                 ## 38:41   long BurstInterval;
                 ## 42:43   unsigned int SamplesPerBurst;
+                SamplesPerBurst <- readBin(buf[off+42:43], "integer", size=2, signed=FALSE, endian="little")
+                oceDebug(debug, vectorShow(SamplesPerBurst, postscript=" [expect ?? for issue 1637]"))
                 ## 44      char CoordSystem;
+                CoordSystem <- as.integer(buf[off+44])
+                oceDebug(debug, vectorShow(CoordSystem, postscript=" (0=beam 1=xyz 2=enu)"))
                 ## 45      char OutMode;
                 ## 46      char OutFormat;
                 ## 47      char RecorderEnabled;
@@ -340,17 +355,19 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
                 ## 247     char AutoSleep;
                 ## 248     char DynBoundAdj;
                 ## 249:250 int CellBegin;
-                CellBegin <- readBin(buf[off+249:250], "integer", size=2, endian="little")
-                oceDebug(debug, vectorShow(CellBegin, postscript=" [expect ??? for issue 1637]"))
+                CellBegin <- 0.01 * readBin(buf[off+249:250], "integer", signed=TRUE, size=2, endian="little")
+                oceDebug(debug, vectorShow(CellBegin, postscript=" m, vert. from instrument [expect ??? for issue 1637]"))
                 ## 251:252 int CellEnd;
-                CellEnd <- readBin(buf[off+251:252], "integer", size=2, endian="little")
-                oceDebug(debug, vectorShow(CellEnd, postscript=" [expect ??? for issue 1637]"))
+                CellEnd <- 0.01 * readBin(buf[off+251:252], "integer", signed=TRUE, size=2, endian="little")
+                oceDebug(debug, vectorShow(CellEnd, postscript=" m, vert. from instrument [expect ??? for issue 1637]"))
                 ## 253:254 int CohLag;
                 ## 255     char DataFormat;
+                DataFormat  <- as.integer(buf[off+255])
+                oceDebug(debug, vectorShow(DataFormat, postscript=" (0 means long, 1 means short)"))
                 ## 256     char WaveSpectra;
                 ## 257:258 int WaterDepth;
-                WaterDepth <- readBin(buf[off+251:252], "integer", size=2, endian="little")
-                oceDebug(debug, vectorShow(WaterDepth, postscript=" [expect ??? for issue 1637]"))
+                WaterDepth <- 0.01 * readBin(buf[off+251:252], "integer", size=2, endian="little")
+                oceDebug(debug, vectorShow(WaterDepth, postscript=" m [expect ??? for issue 1637]"))
                 off <- off + 258
                 oceDebug(debug, "done with 'User setup configuration structure' (258 bytes); off=", off, "\n", style="bold")
             }
