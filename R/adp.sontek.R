@@ -1,5 +1,17 @@
 ## vim: tw=120 shiftwidth=4 softtabstop=4 expandtab:
 
+sontekDateTime <- function(bytes, tz="UTC")
+{
+    ## Note the odd ordering of elements. See e.g. page 87 of [1]
+    ISOdatetime(readBin(bytes[1:2], "integer", size=2, endian="little"),
+                as.integer(bytes[4]), # month
+                as.integer(bytes[3]), # day
+                as.integer(bytes[6]), # hour
+                as.integer(bytes[5]), # minute
+                as.integer(bytes[8]) + as.integer(bytes[7])/100.0, # second + sec100
+                tz=tz)
+}
+
 #' Read a SonTek ADP File
 #'
 #' Read a SonTek acoustic-Doppler profiler file (see reference 1).
@@ -173,12 +185,15 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         ## 36 = spare
         ## 37 int[16], so I guess 2-byte ints, signed?
     } else if (type == "argonaut_adp") {
+        bufEXPORT<<-buf;message("exported bufEXPORT")
         ## See reference [2] print page 87, PDF page 99.
         oceDebug(debug, "about to read 'Argonaut sensor configuration structure' (96 bytes)\n", style="red")
         bytesInConfiguration <- readBin(buf[3:4], "integer", n=1, size=2, endian="little")
         if (bytesInConfiguration != 96)
             warning("bytes 3:4 of the header suggest", bytesInConfiguration, "but this should be 96\n")
-        ## skip DateTimeType, which is 8 bytes long, in bytes 5:12
+        ## 5:12 DateTimeType    ConfigTime;
+        ConfigTime <- sontekDateTime(buf[5:12])
+        oceDebug(debug, vectorShow(ConfigTime))
         cpuSoftwareVerNum <- as.integer(buf[13]) / 10 # CPUSoftwareVerNum [p83]
         dspSoftwareVerNum <- as.integer(buf[14]) / 10 # DSPSoftwareVerNum [p83]
         boardRev <- readBin(buf[15], "character", n=1, size=1, signed=TRUE) # BoardRev [p83]
@@ -217,16 +232,19 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
         press.installed <- switch(as.integer(buf[35]) + 1, FALSE, TRUE) # nolint (variable not used)
         oceDebug(debug, "skipping several things in 'Argonaut sensor configuration structure'\n")
         ## FIXME: there are quite a few more things defined in the table, but we skip for now.
-        if (buf[97] == 0x41 && buf[98] == 0x02) {
-            off <- 96
-            oceDebug(debug, "about to read 'Argonaut operation configuration structure' (64 bytes)\n", style="red")
-            nbytes <- readBin(buf[99:100], "integer", size=2, endian="little")
-            if (nbytes != 64)
-                warning("'Argonaut operation configuration structure' nbytes should be 64 but it is", nbytes, "\n")
+        off <- 96
+        oceDebug(debug, "about to see if we have 'Argonaut operation configuration structure' (64 bytes)\n")
+        if (buf[off+1] == 0x41 && buf[off+2] == 0x02) {
+            oceDebug(debug, "found 2-byte preface to 'Argonaut operation configuration structure' (64 bytes)\n", style="red")
             ##     1 char ConfigType;
             ##     2 char ConfigVer;
             ##   3:4 int Nbytes;
+            Nbytes <- readBin(buf[off+3:4], "integer", size=2, endian="little")
+            if (Nbytes != 64)
+                stop("'Argonaut operation configuration structure' nbytes should be 64 but it is ", Nbytes, "\n")
             ##  5:12 DateTimeType ConfigTime;
+            ConfigTime <- sontekDateTime(buf[off+5:12])
+            oceDebug(debug, vectorShow(ConfigTime))
             ## 13:14 int NpingsPerBeam;
             NpingsPerBeam <- readBin(buf[off+13:14], "integer", size=2, endian="little")
             oceDebug(debug, vectorShow(NpingsPerBeam))
@@ -267,6 +285,75 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
             ## 57     char     SdiFormat;
             ## 58:63  char     Spare[6];
             ## 64     char     DebugOn;
+            off <- off + 64
+            oceDebug(debug, "about to check for a 'User setup parameters structure' (258 bytes)\n")
+            if (buf[off+1] == 0x42 && buf[off+2] == 0x02) {
+                oceDebug(debug, "found 'User setup configuration structure' (258 bytes)\n", style="red")
+                ## User setup parameters structure (258 bytes)
+                ## 1       unsigned char ConfigType; 0x42
+                ## 2       unsigned char ConfigVer;  0x02
+                ## 3:4     unsigned int Nbytes;      258
+                nbytes <- readBin(buf[off+3:4], "integer", size=2, signed=FALSE, endian="little")
+                if (nbytes != 258)
+                    stop("'Argonaut operation configuration structure' nbytes should be 258 but it is ", nbytes, "\n")
+                ## 5:12    DateTimeType ConfigTime;
+                ConfigTime <- sontekDateTime(buf[off+5:12])
+                oceDebug(debug, vectorShow(ConfigTime))
+                ## 13:14   int Temp;
+                ## 15:16   int Sal;
+                ## 17:18   int Cw;
+                ## 19:20   unsigned int BlankDistance;
+                BlankDistance <- readBin(buf[off+19:20], "integer", size=2, signed=FALSE, endian="little")
+                oceDebug(debug, vectorShow(BlankDistance, postscript=" cm [expect ?? for issue 1637]"))
+                ## 21:22   unsigned int PulseLength;
+                ## 23:24   unsigned int CellSize;
+                CellSize <- readBin(buf[off+23:24], "integer", size=2, signed=FALSE, endian="little")
+                oceDebug(debug, vectorShow(CellSize, postscript=" cm [expect 350 for issue 1637]"))
+                ## 25      char TempMode;
+                ## 26:29   long AvgInterval;
+                ## 30:33   long SampleInterval;
+                ## 34:35   unsigned int PingInterval;
+                ## 36:37   unsigned int BurstMode;
+                ## 38:41   long BurstInterval;
+                ## 42:43   unsigned int SamplesPerBurst;
+                ## 44      char CoordSystem;
+                ## 45      char OutMode;
+                ## 46      char OutFormat;
+                ## 47      char RecorderEnabled;
+                ## 48      char RecorderMode;
+                ## 49      char DeploymentMode;
+                ## 50:58   char DeploymentName[9]
+                DeploymentName <- readBin(buf[off+50:59], "character", size=9, endian="little")
+                oceDebug(debug, vectorShow(DeploymentName))
+                ## 59:66   DateTimeType BeginDeploymentDateTime
+                BeginDepoymentTime <- sontekDateTime(buf[off+59:66])
+                oceDebug(debug, vectorShow(BeginDepoymentTime))
+                ## 67:126  char CommentLine1[60];
+                CommentLine1 <- readBin(buf[off+67:126], "character", size=60, endian="little")
+                oceDebug(debug, vectorShow(CommentLine1))
+                ## 127:186 char CommentLine2[60];
+                CommentLine2 <- readBin(buf[off+127:186], "character", size=60, endian="little")
+                oceDebug(debug, vectorShow(CommentLine2))
+                ## 187:246 char CommentLine3[60];
+                CommentLine3 <- readBin(buf[off+187:246], "character", size=60, endian="little")
+                oceDebug(debug, vectorShow(CommentLine3))
+                ## 247     char AutoSleep;
+                ## 248     char DynBoundAdj;
+                ## 249:250 int CellBegin;
+                CellBegin <- readBin(buf[off+249:250], "integer", size=2, endian="little")
+                oceDebug(debug, vectorShow(CellBegin, postscript=" [expect ??? for issue 1637]"))
+                ## 251:252 int CellEnd;
+                CellEnd <- readBin(buf[off+251:252], "integer", size=2, endian="little")
+                oceDebug(debug, vectorShow(CellEnd, postscript=" [expect ??? for issue 1637]"))
+                ## 253:254 int CohLag;
+                ## 255     char DataFormat;
+                ## 256     char WaveSpectra;
+                ## 257:258 int WaterDepth;
+                WaterDepth <- readBin(buf[off+251:252], "integer", size=2, endian="little")
+                oceDebug(debug, vectorShow(WaterDepth, postscript=" [expect ??? for issue 1637]"))
+                off <- off + 258
+                oceDebug(debug, "done with 'User setup configuration structure' (258 bytes); off=", off, "\n", style="bold")
+            }
         } else {
             warning("Argonaut operation configuration structure (64 bytes) not found; expected 0x41 0x02 0x40 but got",
                     " 0x", buf[97], " 0x", buf[98], " 0x", buf[99], sep="")
