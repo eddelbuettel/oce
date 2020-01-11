@@ -370,6 +370,18 @@ read.adp.sontek <- function(file, from=1, to, by=1, tz=getOption("oceTz"),
                 oceDebug(debug, vectorShow(WaterDepth, postscript=" m [expect ??? for issue 1637]"))
                 off <- off + 258
                 oceDebug(debug, "done with 'User setup configuration structure' (258 bytes); off=", off, "\n", style="bold")
+                if (debug) {
+                    ii <- seq(-5, 5)
+                    oceDebug(debug, "below are some bytes (exported to BUF); off=", off, " (exported to OFF)\n", style="red")
+                    BUF<<-buf
+                    OFF<<-off
+                    print(data.frame(i=off+ii, buf=buf[off+ii]))
+                    message("NOTE: first byte after header is %x", buf[off+1])
+                    message("NOTE: 160 bytes later, have %x", buf[off+1+160])
+                    message("NOTE: 161 bytes later, have %x", buf[off+1+161])
+                    message("NOTE: 162 bytes later, have %x", buf[off+1+162])
+
+                }
             }
         } else {
             warning("Argonaut operation configuration structure (64 bytes) not found; expected 0x41 0x02 0x40 but got",
