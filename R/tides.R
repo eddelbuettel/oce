@@ -597,6 +597,9 @@ tidemVuf <- function(t, j, latitude=NULL)
               "doodson[1,]=", doodson[1, ], "\n",
               "doodson[2,]=", doodson[2, ], "\n",
               "doodson[3,]=", doodson[3, ], "\n")
+    cat("dim(doodson): ", paste(dim(doodson), collapse="x"), "\n")
+    cat("dim(a$astro): ", paste(dim(a$astro), collapse="x"), "\n")
+    browser()
     v <- doodson %*% a$astro + tidedata$const$semi
     oceDebug(debug, "tidedata$const$semi[", j, "]=", tidedata$const$semi[j], "\n")
     v <- v - trunc(v)
@@ -702,7 +705,7 @@ tidemAstron <- function(t)
         t <- numberAsPOSIXct(t, tz="UTC")
     d <- as.numeric(difftime(t, ISOdatetime(1899, 12, 31, 12, 0, 0, tz="UTC"), units="days"))
     D <- d / 10000
-    a <- matrix(c(1, d, D^2, D^3), 4, 1)
+    a <- rbind(rep(1.0, length(d)), d, D^2, D^3)
 
     oceDebug(debug, "d=", formatC(d, digits=10), "D=", D, "a=", a, "\n")
 
