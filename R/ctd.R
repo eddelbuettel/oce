@@ -4686,11 +4686,15 @@ drawIsopycnals <- function(nlevels=6, levels, rotate=TRUE, rho1000=FALSE, digits
 #' @param eos equation of state to be used, either `"unesco"` or
 #' `"gsw"`.
 #'
-#' @param xlab optional label for x axis (at top of plot). If not
-#' provided, the value of `xtype` is used for the label.
+#' @param xlab optional label for the horizontal axis (or axes).
+#' If `xlab` is `NULL` (the default)  then a label is inferred from the value of `xtype`.
+#' Setting `xlab=""` prevents labelling.  In cases where `xtype` is a string containing
+#' a `+`, i.e. in cases with two labelled x axes, the value of `xlab` is ignored,
+#' unless it is `""`.
 #'
-#' @param ylab optional label for y axis.  Set to `""` to prevent
-#' labelling the axis.
+#' @param ylab optional label for the vertical axis.
+#' If `ylab` is `NULL` (the default)  then a label is inferred from the value of `ytype`.
+#' Setting `ylab=""` prevents labelling.
 #'
 #' @param lty line type for the profile.
 #'
@@ -4839,10 +4843,20 @@ plotProfile <- function(x,
                         debug=getOption("oceDebug", 0),
                         ...)
 {
-    debug <- min(debug, 3)
+    debug <- max(0, min(debug, 3))
+    ## Set flags indicating whether to label the axes
+    labelX <- is.null(xlab) || xlab != ""
+    labelY <- is.null(ylab) || ylab != ""
+    if (debug) {
+    cat("xlab=", if (is.null(xlab)) "NULL" else paste('"', xlab, '"', sep=""))
+    cat(", ylab=", if (is.null(ylab)) "NULL" else paste('"', ylab, '"', sep=""))
+    cat(", labelX=", labelX)
+    cat(", labelY=", labelY, "\n")
+    }
     oceDebug(debug, "plotProfile(x, xtype=",
              ifelse(is.character(xtype), paste0("\"",xtype,"\""), "(numeric)"),
              ", xlab=", if (is.null(xlab)) "NULL" else paste('"', xlab, '"', sep=""),
+             ", ylab=", if (is.null(ylab)) "NULL" else paste('"', ylab, '"', sep=""),
              ", debug=", debug, ", ...) {\n", sep="", style="bold", unindent=1)
     eos <- match.arg(eos, c("unesco", "gsw"))
     if (missing(mar)) {
@@ -4906,14 +4920,14 @@ plotProfile <- function(x,
     if (is.na(ytypeIndex))
         stop('ytype must be one of: "pressure", "z", "depth", "sigmaTheta", but it is "', ytype, '"')
     ytype <- ytypeChoices[ytypeIndex]
-    if (!is.null(ylab) && ylab == "") {
-        yname <- ""
+    yname <- if (is.null(ylab)) {
+        switch(ytype,
+               pressure=resizableLabel("p", "y", debug=debug-1),
+               z=resizableLabel("z", "y", debug=debug-1),
+               depth=resizableLabel("depth", "y", debug=debug-1),
+               sigmaTheta=resizableLabel("sigmaTheta", "y", debug=debug-1))
     } else {
-        yname <- switch(ytype,
-                        pressure=resizableLabel("p", "y", debug=debug-1),
-                        z=resizableLabel("z", "y", debug=debug-1),
-                        depth=resizableLabel("depth", "y", debug=debug-1),
-                        sigmaTheta=resizableLabel("sigmaTheta", "y", debug=debug-1))
+        ylab
     }
     ## if plim given on a pressure plot, then it takes precedence over ylim;
     ## same for densitylim
@@ -5020,7 +5034,8 @@ plotProfile <- function(x,
         } else {
             plot(xtype, y, xlab="", ylab=yname, type=type, axes=FALSE, xaxs=xaxs, yaxs=yaxs, ylim=ylim, lty=lty, cex=cex, pch=pch, ...)
             axis(3)
-            mtext(xlab, side=3, line=axisNameLoc, cex=par("cex")) # no unit is provided
+            if (labelX)
+                mtext(xlab, side=3, line=axisNameLoc, cex=par("cex")) # no unit is shown
             axis(2)
             box()
             if (grid) {
@@ -5035,7 +5050,10 @@ plotProfile <- function(x,
         plot(index, x[["pressure"]], ylim=ylim, col=col, lty=lty, xlab="", ylab=yname,
              type=type, xaxs=xaxs, yaxs=yaxs, cex=cex, pch=pch, axes=FALSE)
         axis(3)
-        mtext("index", side=3, line=axisNameLoc, cex=par("cex")) # no unit is provided
+        if (labelX)
+            if (is.null(xlab))
+                xlab <- "index"
+            mtext(xlab, side=3, line=axisNameLoc, cex=par("cex")) # no unit is provided
         axis(2)
         box()
         if (grid) {
@@ -5045,9 +5063,12 @@ plotProfile <- function(x,
     } else if (xtype == "density+time") {
         if (add)
             warning("argument 'add' is ignored for xtype=\"density+time\"")
-        sig0 <- if (eos == "unesco") swSigma0(x[["salinity"]], x[["temperature"]], x[["pressure"]]) else
+        sig0 <- if (eos == "unesco") {
+            swSigma0(x[["salinity"]], x[["temperature"]], x[["pressure"]])
+        } else {
             swSigma0(x[["salinity"]], x[["temperature"]], x[["pressure"]],
                      longitude=x[["longitude"]], latitude=x[["latitude"]], eos=eos)
+        }
         if (missing(densitylim))
             densitylim <- range(sig0, na.rm=TRUE)
         look <- if (keepNA) seq_along(y) else !is.na(sig0) & !is.na(y)
@@ -5055,16 +5076,15 @@ plotProfile <- function(x,
         plot(sig0[look], y[look], xlim=densitylim, ylim=ylim, cex=cex, pch=pch,
              type=type, col=col.rho, lty=lty, xlab="", ylab=yname, axes=FALSE, xaxs=xaxs, yaxs=yaxs, ...)
         axis(3, col=col.rho, col.axis=col.rho, col.lab=col.rho)
-        ## FIXME: do next with resizable label; also for the N2
-        ##br <- if (getOption("oceUnitBracket") == '[') c("[", "]") else c("(", ")")
-        if (getOption("oceUnitBracket") == '[') {
-            label <- if (eos == "unesco") expression(paste(sigma[theta], " [", kg/m^3, "]")) else
-                expression(paste(sigma[0], " [", kg/m^3, "]"))
-        } else {
-            label <- if (eos == "unesco") expression(paste(sigma[theta], " (", kg/m^3, ")")) else
-                expression(paste(sigma[0], " (", kg/m^3, ")"))
+        if (labelX) {
+            ## Dual-axis case, so user cannot control axis label
+            xlab <- if (eos == "unesco") {
+                substitute(sigma[theta]*" "*L*kg/m^3*R, unitBrackets())
+            } else {
+                substitute(sigma[0]*" "*L*kg/m^3*R, unitBrackets())
+            }
+            mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"), col=col.time)
         }
-        mtext(label, side=3, line=axisNameLoc, col=col.rho, cex=par("cex"))
         axis(2)
         box()
         par(new=TRUE)                ## FIXME: this probably won't work if add=TRUE
@@ -5073,19 +5093,14 @@ plotProfile <- function(x,
         plot(time, y, xlim=timelim, ylim=ylim, type=type, xlab="", ylab=yname, axes=FALSE,
              lwd=lwd, col=col.time, xaxs=xaxs, yaxs=yaxs, lty=lty, cex=cex, pch=pch)
         axis(1, col=col.time, col.axis=col.time, col.lab=col.time)
-        ## lines(time, y, lwd=lwd, col=col.time)
-        if (knowTimeUnit) {
-            if (getOption("oceUnitBracket") == '[') {
-                mtext(expression(paste(Delta*t, " [s]")), side=1, line=axisNameLoc, cex=par("cex"), col=col.time)
+        if (labelX) {
+            ## Dual-axis case, so user cannot control axis label
+            xlab <- if (knowTimeUnit) {
+                substitute(Delta*t*" "*L*"s"*R, unitBrackets())
             } else {
-                mtext(expression(paste(Delta*t, " (s)")), side=1, line=axisNameLoc, cex=par("cex"), col=col.time)
+                substitute(Delta*t*" "*L*"unknown time unit"*R, unitBrackets())
             }
-        } else {
-            if (getOption("oceUnitBracket") == '[') {
-                mtext(expression(paste(Delta*t, " [unknown unit]")), side=1, line=axisNameLoc, cex=par("cex"), col=col.time)
-            } else {
-                mtext(expression(paste(Delta*t, " (unknown unit)")), side=1, line=axisNameLoc, cex=par("cex"), col=col.time)
-            }
+            mtext(xlab, side=1, line=axisNameLoc, cex=par("cex"), col=col.time)
         }
         box()
         if (grid) {
@@ -5104,10 +5119,10 @@ plotProfile <- function(x,
              xlim=densitylim, ylim=ylim, col=col.rho, lty=lty, cex=cex, pch=pch,
              type=type, xlab="", ylab=yname, axes=FALSE, xaxs=xaxs, yaxs=yaxs, ...)
         axis(3, col=col.rho, col.axis=col.rho, col.lab=col.rho)
-        if (getOption("oceUnitBracket") == '[') {
-            mtext(expression(paste(sigma[theta], " [", kg/m^3, "] ")), side=3, line=axisNameLoc, col=col.rho, cex=par("cex"))
-        } else {
-            mtext(expression(paste(sigma[theta], " (", kg/m^3, ") ")), side=3, line=axisNameLoc, col=col.rho, cex=par("cex"))
+        if (labelX) {
+            ## Dual-axis case, so user cannot control axis label
+            mtext(substitute(sigma[theta]*" "*L*kg/m^3*R, unitBrackets()),
+                  side=3, line=axisNameLoc, col=col.rho, cex=par("cex"))
         }
         axis(2)
         box()
@@ -5123,23 +5138,13 @@ plotProfile <- function(x,
              xlim=dpdtlim, ylim=ylim, type=type, xlab="", ylab=yname, axes=FALSE, lwd=lwd, col=col.dpdt, cex=cex, pch=pch,
              xaxs=xaxs, yaxs=yaxs, lty=lty, ...)
         axis(1, col=col.dpdt, col.axis=col.dpdt, col.lab=col.dpdt)
-        ## lines(dpdt.sm$y, dpdt.sm$x, lwd=lwd, col=col.dpdt)
-        if (getOption("oceUnitBracket") == '[') {
-            if (knowTimeUnit) {
-                mtext(expression(dp/dt * " [dbar/s]"),
-                      side=1, line=axisNameLoc, cex=par("cex"), col=col.dpdt)
+        if (labelX) {
+            label <- if (knowTimeUnit) {
+                substitute(dp/dt*" "*L*dbar/s*R, unitBrackets())
             } else {
-                mtext(expression(dp/dt * " [dbar/(time unit)]"),
-                      side=1, line=axisNameLoc, cex=par("cex"), col=col.dpdt)
+                substitute(dp/dt* " "*L*dbar/"(time unit)"*R, unitBrackets())
             }
-        } else {
-            if (knowTimeUnit) {
-                mtext(expression(dp/dt * " (dbar/s)"),
-                      side=1, line=axisNameLoc, cex=par("cex"), col=col.dpdt)
-            } else {
-                mtext(expression(dp/dt * " (dbar/(time unit))"),
-                      side=1, line=axisNameLoc, cex=par("cex"), col=col.dpdt)
-            }
+            mtext(label, side=1, line=axisNameLoc, cex=par("cex"), col=col.dpdt)
         }
         box()
         if (grid) {
@@ -5163,12 +5168,18 @@ plotProfile <- function(x,
             axis(2)
             axis(3)
             box()
-            if (eos == "gsw" || xtype == "SA") {
-                mtext(resizableLabel("absolute salinity", "x", unit=NULL, debug=debug-1),
-                      side=3, line=axisNameLoc, cex=par("cex"))
-            } else {
-                mtext(resizableLabel("S", "x", unit=NULL, debug=debug-1),
-                      side=3, line=axisNameLoc, cex=par("cex"))
+            if (labelX) {
+                if (is.null(xlab)) {
+                    if (eos == "gsw" || xtype == "SA") {
+                        mtext(resizableLabel("absolute salinity", "x", unit=NULL, debug=debug-1),
+                              side=3, line=axisNameLoc, cex=par("cex"))
+                    } else {
+                        mtext(resizableLabel("S", "x", unit=NULL, debug=debug-1),
+                              side=3, line=axisNameLoc, cex=par("cex"))
+                    }
+                } else {
+                    mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
+                }
             }
         } else {
             look <- if (keepNA) seq_along(y) else !is.na(salinity) & !is.na(y)
@@ -5176,12 +5187,18 @@ plotProfile <- function(x,
                 plot(salinity[look], y[look],
                      xlim=Slim, ylim=ylim, lty=lty, cex=cex, pch=pch,
                      type="n", xlab="", ylab=yname, axes=FALSE, xaxs=xaxs, yaxs=yaxs, ...)
-                if (eos == "gsw" || xtype == "SA") {
-                    mtext(resizableLabel("absolute salinity", "x", unit=NULL, debug=debug-1),
-                          side=3, line=axisNameLoc, cex=par("cex"))
-                } else {
-                    mtext(resizableLabel("S", "x", unit=NULL, debug=debug-1),
-                          side=3, line=axisNameLoc, cex=par("cex"))
+                if (labelX) {
+                    if (is.null(xlab)) {
+                        if (eos == "gsw" || xtype == "SA") {
+                            mtext(resizableLabel("absolute salinity", "x", unit=NULL, debug=debug-1),
+                                  side=3, line=axisNameLoc, cex=par("cex"))
+                        } else {
+                            mtext(resizableLabel("S", "x", unit=NULL, debug=debug-1),
+                                  side=3, line=axisNameLoc, cex=par("cex"))
+                        }
+                    } else {
+                        mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
+                    }
                 }
                 mtext(yname, side=2, line=axisNameLoc, cex=par("cex"))
                 axis(2)
@@ -5218,39 +5235,7 @@ plotProfile <- function(x,
             axis(2)
             axis(3)
             box()
-            if (is.null(xlab)) {
-                ## Look up conductivity unit (issue 731)
-                unit <- x[["conductivityUnit"]]
-                if (is.null(unit)) {
-                    mtext(resizableLabel("C", "x", debug=debug-1),
-                          side=3, line=axisNameLoc, cex=par("cex"))
-                } else {
-                    unitChar <- as.character(unit$unit)
-                    if (0 == length(unitChar)) {
-                        mtext(resizableLabel("C", "x", debug=debug-1),
-                              side=3, line=axisNameLoc, cex=par("cex"))
-                    } else if (unitChar == "ratio") {
-                        mtext(resizableLabel("C", "x", debug=debug-1),
-                              side=3, line=axisNameLoc, cex=par("cex"))
-                    } else if (unitChar == "mS/cm") {
-                        mtext(resizableLabel("conductivity mS/cm", "x", debug=debug-1),
-                              side=3, line=axisNameLoc, cex=par("cex"))
-                    } else if (unitChar == "S/m") {
-                        mtext(resizableLabel("conductivity S/m", "x", debug=debug-1),
-                              side=3, line=axisNameLoc, cex=par("cex"))
-                    } else {
-                        stop("unknown conductivity unit ", unit, "; should be 'ratio', 'mS/cm' or 'S/m'")
-                    }
-                }
-            } else {
-                mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
-            }
-        } else {
-            look <- if (keepNA) seq_along(y) else !is.na(conductivity) & !is.na(y)
-            if (!add) {
-                plot(conductivity[look], y[look],
-                     xlim=Clim, ylim=ylim, lty=lty, cex=cex, pch=pch,
-                     type="n", xlab="", ylab=yname, axes=FALSE, xaxs=xaxs, yaxs=yaxs, ...)
+            if (labelX) {
                 if (is.null(xlab)) {
                     ## Look up conductivity unit (issue 731)
                     unit <- x[["conductivityUnit"]]
@@ -5272,11 +5257,47 @@ plotProfile <- function(x,
                             mtext(resizableLabel("conductivity S/m", "x", debug=debug-1),
                                   side=3, line=axisNameLoc, cex=par("cex"))
                         } else {
-                            stop("unknown conductivity unit ", unit[[1]], "; should be 'ratio', 'mS/cm' or 'S/m'")
+                            stop("unknown conductivity unit ", unit, "; should be 'ratio', 'mS/cm' or 'S/m'")
                         }
                     }
                 } else {
                     mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
+                }
+            }
+        } else {
+            look <- if (keepNA) seq_along(y) else !is.na(conductivity) & !is.na(y)
+            if (!add) {
+                plot(conductivity[look], y[look],
+                     xlim=Clim, ylim=ylim, lty=lty, cex=cex, pch=pch,
+                     type="n", xlab="", ylab=yname, axes=FALSE, xaxs=xaxs, yaxs=yaxs, ...)
+                if (labelX) {
+                    if (is.null(xlab)) {
+                        ## Look up conductivity unit (issue 731)
+                        unit <- x[["conductivityUnit"]]
+                        if (is.null(unit)) {
+                            mtext(resizableLabel("C", "x", debug=debug-1),
+                                  side=3, line=axisNameLoc, cex=par("cex"))
+                        } else {
+                            unitChar <- as.character(unit$unit)
+                            if (0 == length(unitChar)) {
+                                mtext(resizableLabel("C", "x", debug=debug-1),
+                                      side=3, line=axisNameLoc, cex=par("cex"))
+                            } else if (unitChar == "ratio") {
+                                mtext(resizableLabel("C", "x", debug=debug-1),
+                                      side=3, line=axisNameLoc, cex=par("cex"))
+                            } else if (unitChar == "mS/cm") {
+                                mtext(resizableLabel("conductivity mS/cm", "x", debug=debug-1),
+                                      side=3, line=axisNameLoc, cex=par("cex"))
+                            } else if (unitChar == "S/m") {
+                                mtext(resizableLabel("conductivity S/m", "x", debug=debug-1),
+                                      side=3, line=axisNameLoc, cex=par("cex"))
+                            } else {
+                                stop("unknown conductivity unit ", unit[[1]], "; should be 'ratio', 'mS/cm' or 'S/m'")
+                            }
+                        }
+                    } else {
+                        mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
+                    }
                 }
                 axis(2)
                 axis(3)
@@ -5311,9 +5332,13 @@ plotProfile <- function(x,
             axis(3)
             box()
             ##mtext(resizableLabel(xtype, "x"), side=3, line=axisNameLoc, cex=par("cex"))
-            unit <- x@metadata$units[[xtype]]
-            mtext(resizableLabel(xtype, "x", unit=unit, debug=debug-1),
-                  side=3, line=axisNameLoc, cex=par("cex"))
+            if (labelX) {
+                if (is.null(xlab)) {
+                    unit <- x@metadata$units[[xtype]]
+                    xlab <- resizableLabel(xtype, "x", unit=unit, debug=debug-1)
+                }
+                mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
+            }
         } else {
             oceDebug(debug, "line plot\n")
             ##message("ctd.R:4811")
@@ -5347,10 +5372,10 @@ plotProfile <- function(x,
                          xlim=xlim, ylim=rev(range(y[look])),
                          lty=lty, type="n", ylab=yname, axes=FALSE, xaxs=xaxs, yaxs=yaxs, ...)
                 }
-                if (is.null(xlab)) {
-                    mtext(resizableLabel(xtype, "x", unit=unit, debug=debug-1),
-                          side=3, line=axisNameLoc, cex=par("cex"))
-                } else {
+                if (labelX) {
+                    if (is.null(xlab)) {
+                        xlab <- resizableLabel(xtype, "x", unit=unit, debug=debug-1)
+                    }
                     mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
                 }
                 axis(2)
@@ -5381,7 +5406,11 @@ plotProfile <- function(x,
                      xlim=if (!missing(Rrholim)) Rrholim, ylim=rev(range(y[look])), cex=cex, pch=pch,
                      type="n", xlab="", ylab=yname, axes=FALSE, xaxs=xaxs, yaxs=yaxs, ...)
             }
-            mtext(expression(R[rho]), side=3, line=axisNameLoc, cex=par("cex"))
+            if (labelX) {
+                if (is.null(xlab))
+                    xlab <- expression(R[rho])
+                mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
+            }
             axis(2)
             axis(3)
             box()
@@ -5412,12 +5441,18 @@ plotProfile <- function(x,
             axis(2)
             axis(3)
             box()
-            if (eos == "gsw" || xtype == "CT") {
-                mtext(resizableLabel("conservative temperature", "x", unit=unit, debug=debug-1),
-                      side=3, line=axisNameLoc, cex=par("cex"))
-            } else {
-                mtext(resizableLabel("T", "x", unit=unit, debug=debug-1),
-                      side=3, line=axisNameLoc, cex=par("cex"))
+            if (labelX) {
+                if (is.null(xlab)) {
+                    if (eos == "gsw" || xtype == "CT") {
+                        mtext(resizableLabel("conservative temperature", "x", unit=unit, debug=debug-1),
+                              side=3, line=axisNameLoc, cex=par("cex"))
+                    } else {
+                        mtext(resizableLabel("T", "x", unit=unit, debug=debug-1),
+                              side=3, line=axisNameLoc, cex=par("cex"))
+                    }
+                } else {
+                    mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
+                }
             }
         } else {
             look <- if (keepNA) seq_along(y) else !is.na(x[["temperature"]]) & !is.na(y)
@@ -5425,12 +5460,18 @@ plotProfile <- function(x,
                 plot(temperature[look], y[look], lty=lty,
                      xlim=Tlim, ylim=ylim, cex=cex, pch=pch,
                      type="n", xlab="", ylab="", axes=FALSE, xaxs=xaxs, yaxs=yaxs, ...)
-                if (eos == "gsw") {
-                    mtext(resizableLabel("conservative temperature", "x", unit=unit, debug=debug-1),
-                          side=3, line=axisNameLoc, cex=par("cex"))
-                } else {
-                    mtext(resizableLabel("T", "x", unit=unit, debug=debug-1),
-                          side=3, line=axisNameLoc, cex=par("cex"))
+                if (labelX) {
+                    if (is.null(xlab)) {
+                        if (eos == "gsw") {
+                            mtext(resizableLabel("conservative temperature", "x", unit=unit, debug=debug-1),
+                                  side=3, line=axisNameLoc, cex=par("cex"))
+                        } else {
+                            mtext(resizableLabel("T", "x", unit=unit, debug=debug-1),
+                                  side=3, line=axisNameLoc, cex=par("cex"))
+                        }
+                    } else {
+                        mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
+                    }
                 }
                 mtext(yname, side=2, line=axisNameLoc, cex=par("cex"))
                 axis(2)
@@ -5457,27 +5498,30 @@ plotProfile <- function(x,
             axis(2)
             axis(3)
             box()
-            if (eos == "gsw")
-                mtext(resizableLabel("conservative temperature", "x", debug=debug-1),
-                      side=3, line=axisNameLoc, cex=par("cex"))
-            else
-                mtext(resizableLabel(theta, "x", debug=debug-1),
-                      side=3, line=axisNameLoc, cex=par("cex"))
+            if (labelX) {
+                if (is.null(xlab)) {
+                    xlab <- if (eos == "gsw") {
+                        resizableLabel("conservative temperature", "x", debug=debug-1)
+                    } else {
+                        resizableLabel(theta, "x", debug=debug-1)
+                    }
+                }
+                mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
+            }
         } else {
             look <- if (keepNA) seq_along(y) else !is.na(theta) & !is.na(y)
             if (!add) {
                 plot(theta[look], y[look], lty=lty,
                      xlim=Tlim, ylim=ylim, cex=cex, pch=pch,
                      type="n", xlab="", ylab="", axes=FALSE, xaxs=xaxs, yaxs=yaxs, ...)
-                if (is.null(xlab)) {
-                    if (eos == "gsw") {
-                        mtext(resizableLabel("conservative temperature", "x", debug=debug-1),
-                              side=3, line=axisNameLoc, cex=par("cex"))
-                    } else {
-                        mtext(resizableLabel("theta", "x", debug=debug-1),
-                              side=3, line=axisNameLoc, cex=par("cex"))
+                if (labelX) {
+                    if (is.null(xlab)) {
+                        xlab <- if (eos == "gsw") {
+                            resizableLabel("conservative temperature", "x", debug=debug-1)
+                        } else {
+                            resizableLabel("theta", "x", debug=debug-1)
+                        }
                     }
-                } else {
                     mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
                 }
                 mtext(yname, side=2, line=axisNameLoc, cex=par("cex"))
@@ -5509,13 +5553,9 @@ plotProfile <- function(x,
                 plot(st[look], y[look], xlim=range(st[look], na.rm=TRUE), ylim=ylim, type="n", xlab="", ylab=yname,
                      axes=FALSE, xaxs=xaxs, yaxs=yaxs, lty=lty, cex=cex, pch=pch, ...)
             }
-            if (is.null(xlab)) {
-                if (getOption("oceUnitBracket") == '[') {
-                    mtext(expression(paste(sigma[theta], " [", kg/m^3, "]")), side=3, line=axisNameLoc, cex=par("cex"))
-                } else {
-                    mtext(expression(paste(sigma[theta], " (", kg/m^3, ")")), side=3, line=axisNameLoc, cex=par("cex"))
-                }
-            } else {
+            if (labelX) {
+                if (is.null(xlab))
+                    xlab <- substitute(sigma[theta]*" "*L*g/m^3*"C"*R, unitBrackets())
                 mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
             }
             axis(2)
@@ -5544,13 +5584,9 @@ plotProfile <- function(x,
                 plot(rho[look], y[look], xlim=range(rho[look], na.rm=TRUE), ylim=ylim, type="n", xlab="", ylab=yname,
                      axes=FALSE, xaxs=xaxs, yaxs=yaxs, lty=lty, cex=cex, pch=pch, ...)
             }
-            if (is.null(xlab)) {
-                if (getOption("oceUnitBracket") == '[') {
-                    mtext(expression(paste(rho, " [", kg/m^3, "]")), side=3, line=axisNameLoc, cex=par("cex"))
-                } else {
-                    mtext(expression(paste(rho, " (", kg/m^3, ")")), side=3, line=axisNameLoc, cex=par("cex"))
-                }
-            } else {
+            if (labelX) {
+                if (is.null(xlab))
+                    xlab <- substitute(rho*" "*L*kg/m^3*R, unitBrackets())
                 mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
             }
             axis(2)
@@ -5581,16 +5617,17 @@ plotProfile <- function(x,
              xlim=densitylim, ylim=ylim, cex=cex, pch=pch,
              type="n", xlab="", ylab=yname, axes=FALSE, xaxs=xaxs, yaxs=yaxs, ...)
         axis(3, col=col.rho, col.axis=col.rho, col.lab=col.rho)
-        tmpsep <- getOption("oceUnitSep")
-        sep <- if (!is.null(tmpsep)) tmpsep else ""
-        if (getOption("oceUnitBracket") == '[') {
-            label <- if (eos == "unesco") bquote(sigma[theta]*" ["*.(sep)*kg/m^3*.(sep)*"]") else
-                bquote(sigma[0]*" ["*.(sep)*kg/m^3*.(sep)*"]")
-        } else {
-            label <- if (eos == "unesco") bquote(sigma[theta]*" ("*.(sep)*kg/m^3*.(sep)*")") else
-                bquote(sigma[0]*" ("*.(sep)*kg/m^3*.(sep)*")")
+        if (labelX) {
+            xlab <- substitute(sigma[theta]*" "*L*" "*kg/m^3*" "*R, unitBrackets())
+            ## if (getOption("oceUnitBracket") == '[') {
+            ##     label <- if (eos == "unesco") bquote(sigma[theta]*" ["*.(sep)*kg/m^3*.(sep)*"]") else
+            ##         bquote(sigma[0]*" ["*.(sep)*kg/m^3*.(sep)*"]")
+            ## } else {
+            ##     label <- if (eos == "unesco") bquote(sigma[theta]*" ("*.(sep)*kg/m^3*.(sep)*")") else
+            ##         bquote(sigma[0]*" ("*.(sep)*kg/m^3*.(sep)*")")
+            ## }
+            mtext(xlab, side=3, line=axisNameLoc, col=col.rho, cex=par("cex"))
         }
-        mtext(label, side=3, line=axisNameLoc, col=col.rho, cex=par("cex"))
         axis(2)
         box()
         if (type == 'l') {
@@ -5624,10 +5661,14 @@ plotProfile <- function(x,
             points(N2, y, col=col.N2, pch=pch, cex=cex)
             lines(N2, y, col=col.N2, lwd=lwd, lty=lty)
         }
-        if (getOption("oceUnitBracket") == '[') {
-            mtext(expression(paste(N^2, " [", s^-2, "]")), side=1, line=axisNameLoc, col=col.N2, cex=par("cex"))
-        } else {
-            mtext(expression(paste(N^2, " (", s^-2, ")")), side=1, line=axisNameLoc, col=col.N2, cex=par("cex"))
+        if (labelX) {
+            xlab <- substitute(N^2*" "*L*s^-2*R, unitBrackets())
+            mtext(xlab, side=1, line=axisNameLoc, col=col.N2, cex=par("cex"))
+            #if (getOption("oceUnitBracket") == '[') {
+            #    mtext(expression(paste(N^2, " [", s^-2, "]")), side=1, line=axisNameLoc, col=col.N2, cex=par("cex"))
+            #} else {
+            #    mtext(expression(paste(N^2, " (", s^-2, ")")), side=1, line=axisNameLoc, col=col.N2, cex=par("cex"))
+            #}
         }
         box()
         if (grid) {
@@ -5643,10 +5684,10 @@ plotProfile <- function(x,
             plot(N2[look], y[look], lty=lty,
                  xlim=N2lim, ylim=ylim, cex=cex, pch=pch,
                  type="n", xlab="", ylab=yname, axes=FALSE)
-            if (getOption("oceUnitBracket") == '[') {
-                mtext(expression(paste(N^2, " [", s^-2, "]")), side=3, line=axisNameLoc, cex=par("cex"), xaxs=xaxs, yaxs=yaxs)
-            } else {
-                mtext(expression(paste(N^2, " (", s^-2, ")")), side=3, line=axisNameLoc, cex=par("cex"), xaxs=xaxs, yaxs=yaxs)
+            if (labelX) {
+                if (is.null(xlab))
+                    xlab <- substitute(N^2*" "*L*s^-2*R, unitBrackets())
+                mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"), xaxs=xaxs, yaxs=yaxs)
             }
             axis(2)
             axis(3)
@@ -5669,8 +5710,14 @@ plotProfile <- function(x,
             plot(spice[look], y[look], lty=lty,
                  ylim=ylim, cex=cex, pch=pch,
                  type="n", xlab="", ylab=yname, axes=FALSE)
-            mtext(resizableLabel("spice", "x", debug=debug-1),
-                  side=3, line=axisNameLoc, cex=par("cex"), xaxs=xaxs, yaxs=yaxs)
+            if (labelX) {
+                if (is.null(xlab)) {
+                    mtext(resizableLabel("spice", "x", debug=debug-1),
+                          side=3, line=axisNameLoc, cex=par("cex"), xaxs=xaxs, yaxs=yaxs)
+                } else {
+                    mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"), xaxs=xaxs, yaxs=yaxs)
+                }
+            }
             axis(2)
             axis(3)
             box()
@@ -5704,30 +5751,27 @@ plotProfile <- function(x,
              xlim=Tlim, ylim=ylim, col=col.temperature, lty=lty, cex=cex, pch=pch,
              type=type, xlab="", ylab=yname, axes=FALSE, xaxs=xaxs, yaxs=yaxs)
         axis(3, col=col.temperature, col.axis=col.temperature, col.lab=col.temperature)
-        if (is.null(getOption('plotProfileNoXLab'))) {
-            if (eos == "gsw")
-                mtext(resizableLabel("conservative temperature", "x", debug=debug-1),
-                      side=3, line=axisNameLoc, col=col.temperature, cex=par("cex"))
+        if (labelX) {
+            label <- if (eos == "gsw")
+                resizableLabel("conservative temperature", "x")
             else
-                mtext(resizableLabel("T", "x", debug=debug-1),
-                      side=3, line=axisNameLoc, col=col.temperature, cex=par("cex"))
+                resizableLabel("T", "x")
+            mtext(label, side=3, line=axisNameLoc, col=col.temperature, cex=par("cex"))
         }
         axis(2)
         box()
-        ## lines(temperature, y, col=col.temperature, lwd=lwd)
         par(new=TRUE)
         look <- if (keepNA) seq_along(y) else !is.na(x[["salinity"]]) & !is.na(y)
         plot(salinity[look], y[look],
              xlim=Slim, ylim=ylim, col=col.salinity, lty=lty, cex=cex, pch=pch,
              type=type, xlab="", ylab="", axes=FALSE, xaxs=xaxs, yaxs=yaxs)
         axis(1, col=col.salinity, col.axis=col.salinity, col.lab=col.salinity)
-        if (is.null(getOption('plotProfileNoXLab'))) {
-            if (eos == "gsw")
-                mtext(resizableLabel("absolute salinity", "x", debug=debug-1),
-                      side=1, line=axisNameLoc, col=col.salinity, cex=par("cex"))
+        if (labelX) {
+            label <- if (eos == "gsw")
+                resizableLabel("absolute salinity", "x")
             else
-                mtext(resizableLabel("S", "x", debug=debug-1),
-                      side=1, line=axisNameLoc, col=col.salinity, cex=par("cex"))
+                resizableLabel("S", "x")
+            mtext(label, side=1, line=axisNameLoc, col=col.salinity, cex=par("cex"))
         }
         box()
         if (grid) {
@@ -5752,16 +5796,17 @@ plotProfile <- function(x,
                  ylim=ylim, lty=lty, cex=cex, pch=pch,
                  type="n", xlab="", ylab="", axes=FALSE, xaxs=xaxs, yaxs=yaxs)
             axis(3)
-            #mtext(resizableLabel("pressure", "y"), side=2, line=axisNameLoc, cex=par("cex"))
             mtext(yname, side=2, line=axisNameLoc, cex=par("cex"))
-            ## label <- if (w <= length(x@metadata$labels)) x@metadata$labels[w] else
-            ##     as.character(xtype)
-            label <- as.character(xtype)
-            if (is.character(label) && label == "sigmaTheta")
-                label <- resizableLabel("sigmaTheta", "x", debug=debug-1)
-            ##issue1684/2020-04-20 label <- resizableLabel(label, "x", unit=x@metadata$units[[xtype]], debug=debug-1)
-            ##issue1684/2020-04-20 oceDebug(debug, "x name computed as \"", paste0(as.character(label)), "\"\n", sep="")
-            mtext(label, side=3, line=axisNameLoc, cex=par("cex"))
+            if (labelX) {
+                if (is.null(xlab)) {
+                    label <- as.character(xtype)
+                    if (is.character(label) && label == "sigmaTheta")
+                        label <- resizableLabel("sigmaTheta", "x", debug=debug-1)
+                    mtext(label, side=3, line=axisNameLoc, cex=par("cex"))
+                } else {
+                    mtext(xlab, side=3, line=axisNameLoc, cex=par("cex"))
+                }
+            }
             axis(2)
             box()
         }

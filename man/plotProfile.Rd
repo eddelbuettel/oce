@@ -96,11 +96,15 @@ to 0dbar (i.e. the surface), 1000dbar, 2000dbar, 3000dbar, and 4000dbar.
 
 \item{lty}{line type for the profile.}
 
-\item{xlab}{optional label for x axis (at top of plot). If not
-provided, the value of \code{xtype} is used for the label.}
+\item{xlab}{optional label for the horizontal axis (or axes).
+If \code{xlab} is \code{NULL} (the default)  then a label is inferred from the value of \code{xtype}.
+Setting \code{xlab=""} prevents labelling.  In cases where \code{xtype} is a string containing
+a \code{+}, i.e. in cases with two labelled x axes, the value of \code{xlab} is ignored,
+unless it is \code{""}.}
 
-\item{ylab}{optional label for y axis.  Set to \code{""} to prevent
-labelling the axis.}
+\item{ylab}{optional label for the vertical axis.
+If \code{ylab} is \code{NULL} (the default)  then a label is inferred from the value of \code{ytype}.
+Setting \code{ylab=""} prevents labelling.}
 
 \item{col}{color for a general profile.}
 

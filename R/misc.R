@@ -2405,15 +2405,11 @@ resizableLabel <- function(item, axis="x", sep, unit=NULL, debug=getOption("oceD
     itemAllowedMatch <- pmatch(item, itemAllowed)
     if (!is.na(itemAllowedMatch))
         item <- itemAllowed[itemAllowedMatch[1]]
-    if (getOption("oceUnitBracket") == "[") {
-        L <- " ["
-        R <- "]"
-    } else {
-        L <- " ("
-        R <- ")"
-    }
+    LR <- unitBrackets()
+    L <- LR$L
+    R <- LR$R
     if (missing(sep)) {
-        tmp <- getOption("oceUnitSep")
+        tmp <- getOption("oceUnitSep", "")
         sep <- if (!is.null(tmp)) tmp else ""
     }
     L <- paste(L, sep, sep="")
@@ -5046,5 +5042,32 @@ lowpass <- function(x, filter="hamming", n, replace=TRUE, coefficients=FALSE)
         }
     }
     rval
+}
+
+#' Bracketing strings to put to the left of a unit
+#'
+#' This returns strings built up of either parentheses or square brackets,
+#' depending on the value of [`getOption`]`("oceUnitBracket")`, which is
+#' `"["` by default.  Space may be added as appropriate, depending on the
+#' value of [`getOption`]`("oceUnitSep")`, which is an empty string by
+#' default.  This function is used by [resizableLabel()]) in the
+#' construction of labels for axis names.
+#'
+#' @return A list containing `L` and `R`, suitable for use with [expression()].
+#'
+#' @examples
+#' day <- seq(0, 1, length.out=100)
+#' temperature <- 10 + sin(day * 2 * pi / 1)
+#' ylab <- substitute("Temperature "*L*degree*"C"*R, unitBrackets())
+#' plot(day, temperature, ylab=ylab, type="l")
+#' @author Dan Kelley
+unitBrackets <- function()
+{
+    sep <- getOption("oceUnitSep", "")
+    if (getOption("oceUnitBracket", default="[") == '[') {
+        list(L=paste0("[", sep), R=paste0(sep, "]")) 
+    } else {
+        list(L=paste0("(", sep), R=paste0(sep, ")")) 
+    }
 }
 
