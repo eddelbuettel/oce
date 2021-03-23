@@ -945,11 +945,11 @@ setMethod(f="[[<-",
 #' Assemble data into a [ctd-class] object.
 #'
 #' @param salinity There are several distinct choices for `salinity`.
-#' * It can be an [rsk-class] object (see \dQuote{Converting rsk objects} for details).
 #'
 #' * It can be a
 #' vector indicating the practical salinity through the water column. In that case,
 #' `as.ctd` employs the other arguments listed below.
+#'
 #' * It can be an [rsk-class] object (see \dQuote{Converting rsk objects} for details).
 #'
 #' * It can be something (a data frame, a list or an `oce` object)
@@ -961,9 +961,6 @@ setMethod(f="[[<-",
 #' then only the first column is used, and a warning to that effect is given,
 #' unless the `profile` argument is specified and then that specific
 #' profile is extracted.
-#' * It can be an [rsk-class] object (see \dQuote{Converting rsk objects} for details).
-#'
-#' * It can be an [rsk-class] object (see \dQuote{Converting rsk objects} for details).
 #'
 #' * It can be unspecified, in which case `conductivity` becomes a mandatory
 #' argument, because it will be needed for computing actual salinity,
@@ -5815,6 +5812,23 @@ plotProfile <- function(x,
         w <- which(names(x@data) == xtype)
         if (length(w) < 1)
             stop("unknown xtype value (\"", xtype, "\")")
+        # Try to compute a top-axis label with units, unless 'xlab' was given.
+        if (is.null(xlab)) {
+            label <- if (xtype %in% names(x@metadata$units)) {
+                #. tmp <- getOption("oceUnitSep")
+                #. sep <- if (!is.null(tmp)) tmp else ""
+                #. if (getOption("oceUnitBracket") == "[") {
+                #.     L <- paste(" [", sep, sep="")
+                #.     R <- paste(sep, " ]", sep="")
+                #. } else {
+                #.     L <- paste(" (", sep, sep="")
+                #.     R <- paste(sep, " )", sep="")
+                #. }
+                label <- resizableLabel(as.character(xtype), "x", unit=x@metadata$units[[xtype]]$unit)
+            } else {
+                as.character(xtype)
+            }
+        }
         look <- if (keepNA) seq_along(y) else !is.na(x@data[[xtype]]) & !is.na(y)
         dots <- list(...)
         ## message("names(dots)=", paste(names(dots), collapse=" "))
@@ -5830,7 +5844,6 @@ plotProfile <- function(x,
             mtext(yname, side=2, line=axisNameLoc, cex=par("cex"))
             ## label <- if (w <= length(x@metadata$labels)) x@metadata$labels[w] else
             ##     as.character(xtype)
-            label <- as.character(xtype)
             if (is.character(label) && label == "sigmaTheta")
                 label <- resizableLabel("sigmaTheta", "x", debug=debug-1)
             ##issue1684/2020-04-20 label <- resizableLabel(label, "x", unit=x@metadata$units[[xtype]], debug=debug-1)
@@ -5847,8 +5860,8 @@ plotProfile <- function(x,
         } else if (type == "b" || type == "o") {
             lines(x@data[[w]], y, lwd=lwd, col=col)
             points(x@data[[w]], y, lwd=lwd, pch=pch, col=col, lty=lty, cex=cex)
-        } else {
-            points(x@data[[w]], y, lwd=lwd, pch=pch, col=col, lty=lty, cex=cex)
+        # issue1791 } else {
+        # issue1791     points(x@data[[w]], y, lwd=lwd, pch=pch, col=col, lty=lty, cex=cex)
         }
         if (grid) {
             at <- par("xaxp")
